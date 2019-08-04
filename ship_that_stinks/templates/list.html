@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3>Particpants</h3>
+<a href="/participants/add" class="btn btn-success btn-sm">
+  <i class="glyphicon glyphicon-plus"></i>
+  Add participant
+</a>
+
+{% for participant in participants %}
+<div class="media">
+  <a href="/participants/{{participant.id}}">
+    <div class="media-left">
+      <img src="http://placekitten.com/g/128/192">
+    </div>
+    <div class="media-body">
+      <h4>{{participant.first_name}}</h4>
+      <p>{{participant.surname}}</p>
+    </div>
+  </a>
+</div>
+{% else %}
+<p>No participants found</p>
+{% endfor %}
+
+{% if next_page_token %}
+<nav>
+  <ul class="pager">
+    <li><a href="?page_token={{next_page_token}}">More</a></li>
+  </ul>
+</nav>
+{% endif %}
+
+{% endblock %}
