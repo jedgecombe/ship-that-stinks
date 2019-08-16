@@ -3,25 +3,25 @@
 {% block content %}
 
 <h3>Particpants</h3>
-<a href="/participants/add" class="btn btn-success btn-sm">
+<a href="/shipmates/add" class="btn btn-success btn-sm">
   <i class="glyphicon glyphicon-plus"></i>
-  Add participant
+  Add shipmate
 </a>
 
-{% for participant in participants %}
+{% for shipmate in shipmates %}
 <div class="media">
-  <a href="/participants/{{participant.id}}">
+  <a href="/shipmates/{{shipmate.id}}">
     <div class="media-left">
       <img src="http://placekitten.com/g/128/192">
     </div>
     <div class="media-body">
-      <h4>{{participant.first_name}}</h4>
-      <p>{{participant.surname}}</p>
+      <h4>{{shipmate.first_name}}</h4>
+      <p>{{shipmate.surname}}</p>
     </div>
   </a>
 </div>
 {% else %}
-<p>No participants found</p>
+<p>No shipmates found</p>
 {% endfor %}
 
 {% if next_page_token %}

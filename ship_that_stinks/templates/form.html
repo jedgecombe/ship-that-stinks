@@ -1,27 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3>{{action}} participant</h3>
+<h3>{{action}} shipmate</h3>
 
 <form method="POST" enctype="multipart/form-data">
   <div class="form-group">
     <label for="firstName">First Name</label>
-    <input type="text" name="first_name" id="first_name" value="{{participant.first_name}}" class="form-control"/>
+    <input type="text" name="first_name" id="first_name" value="{{shipmate.first_name}}" class="form-control"/>
   </div>
 
   <div class="form-group">
     <label for="surname">Surname</label>
-    <input type="text" name="surname" id="surname" value="{{participant.surname}}" class="form-control"/>
+    <input type="text" name="surname" id="surname" value="{{shipmate.surname}}" class="form-control"/>
   </div>
 
   <div class="form-group">
     <label for="email">Email</label>
-    <input type="text" name="email" id="email" value="{{participant.email}}" class="form-control"/>
+    <input type="text" name="email" id="email" value="{{shipmate.email}}" class="form-control"/>
   </div>
 
   <div class="form-group">
     <label for="nickname">Nickname</label>
-    <input type="text" name="nickname" id="email" value="{{participant.nickname}}" class="form-control"/>
+    <input type="text" name="nickname" id="nickname" value="{{shipmate.nickname}}" class="form-control"/>
   </div>
 
   <button type="submit" class="btn btn-success">Save</button>

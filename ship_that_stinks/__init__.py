@@ -27,7 +27,7 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     # Register the Bookshelf CRUD blueprint.
     from .crud import crud
 
-    app.register_blueprint(crud, url_prefix="/participants")
+    app.register_blueprint(crud, url_prefix="/shipmates")
 
     # Add a default root route.
     @app.route("/")
