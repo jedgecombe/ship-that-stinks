@@ -18,6 +18,7 @@ flask-migrate = "*"
 wtforms = "*"
 flask-wtf = "*"
 wtforms-components = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"

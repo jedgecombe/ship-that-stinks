@@ -1,0 +1,13 @@
+black
+isort
+oauth2client
+python-dotenv
+Flask
+Flask-SQLAlchemy
+PyMySQL
+flask-login
+flask-migrate
+wtforms
+flask-wtf
+wtforms-components
+gunicorn
