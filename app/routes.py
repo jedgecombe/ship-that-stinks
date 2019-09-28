@@ -77,7 +77,7 @@ def create_event():
         return redirect(url_for('index'))
     return render_template('create_event.html', title='Create an event', form=form)
 
-@app.route('/my_account', methods=['GET', 'POST'])
+@app.route('/my_account', methods=['POST'])
 def update_account():
     form = AccountForm()
     if form.validate_on_submit():
