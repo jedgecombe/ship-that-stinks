@@ -1,0 +1,32 @@
+<html>
+    <head>
+        {% if title %}
+        <title>{{ title }} - The Ship That Always Stink</title>
+        {% else %}
+        <title>Flask Application</title>
+        {% endif %}
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/main.css') }}">
+    </head>
+    <body>
+      <nav>The Ship That Always Stinks:
+        {% if current_user.is_anonymous %}
+        <a href = "{{ url_for('login') }}">Login</a>
+        {% else %}
+        <a href = "{{ url_for('index') }}">Home</a>
+        <a href = "{{ url_for('create_event') }}">Create an event</a>
+        <a href = "{{ url_for('logout') }}">Logout</a>
+        {% endif %}
+      </nav>
+      <hr>
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      <ul>
+          {% for message in messages %}
+          <li>{{ message }}</li>
+          {% endfor %}
+      </ul>
+      {% endif %}
+      {% endwith %}
+      {% block content %} {% endblock %}
+    </body>
+</html>

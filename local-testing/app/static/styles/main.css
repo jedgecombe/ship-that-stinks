@@ -1,0 +1,12 @@
+body {
+  background-color: #4270a1;
+
+}
+.event {
+  background-color: #bfdeff;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  border-radius: 10px;
+  padding: 5px 20px 5px 20px;
+  width: 500px;
+  margin: 15px;
+}

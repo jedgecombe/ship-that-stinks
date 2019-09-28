@@ -1,0 +1,41 @@
+{% extends "base.html"%}
+
+{% block content %}
+<h1>Create a new event</h1>
+<div class="event">
+<form action="" method="post" novalidate>
+  <ul>
+  {% for error in form.event_name.errors %}
+  <span style="color: red;"><li>{{ form.event_name.label }}: {{ error }}</li></span>
+  {% endfor %}
+  {% for error in form.event_date.errors %}
+  <span style="color: red;"><li>{{ form.event_date.label }}: {{ error }}</li></span>
+  {% endfor %}
+  {% for error in form.event_time.errors %}
+  <span style="color: red;"><li>{{ form.event_time.label }}: {{ error }}</li></span>
+  {% endfor %}
+  {% for error in form.event_location.errors %}
+  <span style="color: red;"><li>{{ form.event_time.label }}: {{ error }}</li></span>
+  {% endfor %}
+  </ul>
+  {{ form.hidden_tag() }}
+  <p>
+    {{ form.event_name.label }}<br>
+    {{ form.event_name(size=32) }}
+  </p>
+  <p>
+    {{ form.event_date.label }}<br>
+    {{ form.event_date }}
+  </p>
+  <p>
+    {{ form.event_time.label }}<br>
+    {{ form.event_time }}
+  </p>
+  <p>
+    {{ form.event_location.label }}<br>
+    {{ form.event_location(size=32) }}
+  </p>
+  <p>{{ form.submit() }}</p>
+</form>
+</div>
+{% endblock %}
