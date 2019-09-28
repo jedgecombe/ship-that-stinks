@@ -4,8 +4,8 @@
 <h1>My account</h1>
 <form action="" method="post" novalidate>
   <p>
-    {{ user.password.label }}<br>
-    {{ user.password(size=32) }}
+    {{ form.password.label }}<br>
+    {{ form.password(size=32) }}
   </p>
   <p>{{ form.submit() }}</p>
 </form>
