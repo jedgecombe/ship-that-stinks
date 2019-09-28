@@ -35,7 +35,8 @@ def logout():
 @login_required
 def response():
     if request.args.get('modify'):
-        proposal_response.query.filter_by(id = request.args.get('response_id')).update(dict(response_status="Closed"))
+        proposal_response.query.filter_by(id=request.args.get('response_id')).update(
+            dict(response_status="Closed"))
     focus_event = event.query.get(request.args['event_id'])
     form = ResponseForm()
     if form.validate_on_submit():
@@ -55,12 +56,13 @@ def index():
 #    proposals = user.proposals.all()
     return render_template('index.html', title='Home', events=events)
 
+
 @app.route('/create_event', methods=['GET', 'POST'])
 def create_event():
     if request.args.get('modify'):
         focus_event = event.query.get(request.args.get('event_id'))
         form = EventForm(obj=focus_event)
-        event.query.filter_by(id = focus_event.id).update(dict(event_status="Closed"))
+        event.query.filter_by(id=focus_event.id).update(dict(event_status="Closed"))
     else:
         form = EventForm()
     if form.validate_on_submit():
@@ -77,7 +79,8 @@ def create_event():
         return redirect(url_for('index'))
     return render_template('create_event.html', title='Create an event', form=form)
 
-@app.route('/update_account', methods=['POST'])
+
+@app.route('/update_account', methods=['GET', 'POST'])
 def update_account():
     form = AccountForm()
     if form.validate_on_submit():
