@@ -1,12 +1,15 @@
-from app import db
 import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
+
 from flask_login import UserMixin
-from app import login
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from app import db, login
+
 
 @login.user_loader
 def load_user(id):
     return shipmate.query.get(int(id))
+
 
 class shipmate(db.Model, UserMixin):
 
@@ -28,6 +31,7 @@ class shipmate(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+
 class proposal_response(db.Model):
 
     __tablename__ = "proposal_response"
@@ -38,6 +42,7 @@ class proposal_response(db.Model):
     response_status = db.Column(db.String(32), index=True, default="Open")
     event = db.Column(db.Integer, db.ForeignKey('events.id'))
     shipmate = db.Column(db.Integer, db.ForeignKey('shipmates.id'))
+
 
 class event(db.Model):
 

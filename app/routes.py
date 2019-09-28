@@ -1,10 +1,13 @@
-from app import app, db
-from flask import render_template, flash, redirect, request, url_for
-from app.forms import EventForm, LoginForm, ResponseForm
-from app.models import event, shipmate, proposal_response
-from flask_login import current_user, login_user, login_required, logout_user
-from werkzeug.urls import url_parse
 import datetime
+
+from flask import flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, login_user, logout_user
+from werkzeug.urls import url_parse
+
+from app import app, db
+from app.forms import EventForm, LoginForm, ResponseForm
+from app.models import event, proposal_response, shipmate
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -23,10 +26,12 @@ def login():
         return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
 
+
 @app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
 
 @app.route('/response', methods=['GET', 'POST'])
 @login_required
@@ -43,6 +48,7 @@ def response():
         return redirect(url_for('index'))
     return render_template('response.html', title='Respond to an event proposal', event=focus_event, form=form)
 
+
 @app.route('/')
 @app.route('/index')
 @login_required
@@ -50,6 +56,7 @@ def index():
     events = event.query.filter_by(event_status = "Open").order_by(event.event_date).all()
 #    proposals = user.proposals.all()
     return render_template('index.html', title='Home', events=events)
+
 
 @app.route('/create_event', methods=['GET', 'POST'])
 def create_event():

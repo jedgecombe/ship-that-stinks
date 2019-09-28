@@ -4,20 +4,20 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+black = "==19.3b0"
+isort = "*"
 
 [packages]
-google-cloud-datastore = "==1.7.1"
-gunicorn = "==19.9.0"
 oauth2client = "==4.1.2"
 python-dotenv = "*"
 Flask = ">=1.0.0"
 Flask-SQLAlchemy = "==2.3.2"
 PyMySQL = "==0.9.2"
-black = "*"
 flask-login = "*"
+flask-migrate = "*"
+wtforms = "*"
+flask-wtf = "*"
+wtforms-components = "*"
 
 [requires]
 python_version = "3.7"
-
-[pipenv]
-allow_prereleases = true
