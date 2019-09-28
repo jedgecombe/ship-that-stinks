@@ -1,0 +1,11 @@
+{% extends "base.html"%}
+
+{% block content %}
+<div class="event">
+<form action="" method="post" novalidate>
+  {{ form.hidden_tag() }}
+  {{ form.response() }}
+  {{ form.submit() }}
+</form>
+</div>
+{% endblock %}
