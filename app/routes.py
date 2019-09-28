@@ -2,9 +2,9 @@ from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.urls import url_parse
 
-from . import app, db
-from .forms import EventForm, LoginForm, ResponseForm
-from .models import event, proposal_response, shipmate
+from app.app import app, db
+from app.app.forms import EventForm, LoginForm, ResponseForm
+from app.app.models import event, proposal_response, shipmate
 
 
 @app.route('/login', methods=['GET', 'POST'])
