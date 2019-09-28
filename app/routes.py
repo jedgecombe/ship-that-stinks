@@ -83,4 +83,4 @@ def update_account():
     if form.validate_on_submit():
         user = shipmate.query.filter_by(nickname=form.username.data).first()
         user.set_password(form.password.data)
-    return render_template('update_account.html', title='My account')
+        return render_template('update_account.html', title='My account', form=form, user=user)
