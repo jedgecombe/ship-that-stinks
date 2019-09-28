@@ -51,7 +51,7 @@ def response():
 @app.route('/index')
 @login_required
 def index():
-    events = event.query.filter_by(event_status = "Open").order_by(event.event_date).all()
+    events = event.query.filter_by(event_status="Open").order_by(event.event_date).all()
 #    proposals = user.proposals.all()
     return render_template('index.html', title='Home', events=events)
 
@@ -68,7 +68,11 @@ def create_event():
         print(type(form.event_date.data), form.event_date.data)
         print(type(form.event_time.data), form.event_time.data)
         flash("Event proposal for '{}' sent".format(form.event_name.data))
-        new_event = event(event_name = form.event_name.data, event_date = form.event_date.data, event_time = form.event_time.data, event_location = form.event_location.data, organised_by=current_user.id)
+        new_event = event(event_name=form.event_name.data,
+                          event_date=form.event_date.data,
+                          event_time=form.event_time.data,
+                          event_location=form.event_location.data,
+                          organised_by=current_user.id)
         db.session.add(new_event)
         db.session.commit()
         return redirect(url_for('index'))
