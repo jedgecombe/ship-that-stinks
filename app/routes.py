@@ -81,9 +81,17 @@ def create_event():
 
 
 @app.route('/update_account', methods=['GET', 'POST'])
+@login_required
 def update_account():
     form = AccountForm()
-    if form.validate_on_submit():
-        user = shipmate.query.filter_by(nickname=form.username.data).first()
-        user.set_password(form.password.data)
-        return render_template('update_account.html', title='My account', form=form)
+    if request.method == 'POST':
+        print('POST')
+        if form.validate_on_submit():
+            print('VALIDATE')
+            user = shipmate.query.filter_by(nickname=form.username.data).first()
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash('Password has been updated!', 'success')
+            return redirect(url_for('index'))
+    return render_template('update_account.html', title='My account', form=form)
