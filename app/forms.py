@@ -26,3 +26,8 @@ class LoginForm(FlaskForm):
 class ResponseForm(FlaskForm):
     response = RadioField(choices=[('Accepted', 'Accept'), ('Declined', 'Decline')])
     submit = SubmitField('Send Response')
+
+
+class AccountForm(FlaskForm):
+    password = PasswordField('Change password', validators=[DataRequired()])
+    submit = SubmitField('Update')

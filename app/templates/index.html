@@ -7,7 +7,7 @@
     <div class="event">
       <h3> {{ event.event_name }} </h3>
       <ul>
-        <li><b>When: </b> {{ event.event_date.strftime('%a, %b %-d %Y') }} at {{ event.event_time.strftime('%H:%M') }}</li>
+        <li><b>When: </b> {{ event.event_date.strftime('%a, %b %-d, %Y') }} at {{ event.event_time.strftime('%H:%M') }}</li>
         <li><b>Where: </b> {{ event.event_location }} </li>
         {% if event.organised_by == current_user.id %}
         <li><i>Proposed by you - {{ event.responses.filter_by(response_status="Open").count() }} responses - <a href = " {{ url_for('create_event', modify=True, event_id=event.id) }}">Modify this event</a></i></li>

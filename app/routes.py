@@ -3,7 +3,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.urls import url_parse
 
 from app import app, db
-from app.forms import EventForm, LoginForm, ResponseForm
+from app.forms import AccountForm, EventForm, LoginForm, ResponseForm
 from app.models import event, proposal_response, shipmate
 
 
@@ -55,7 +55,6 @@ def index():
 #    proposals = user.proposals.all()
     return render_template('index.html', title='Home', events=events)
 
-
 @app.route('/create_event', methods=['GET', 'POST'])
 def create_event():
     if request.args.get('modify'):
@@ -77,3 +76,11 @@ def create_event():
         db.session.commit()
         return redirect(url_for('index'))
     return render_template('create_event.html', title='Create an event', form=form)
+
+@app.route('/my_account', methods=['GET', 'POST'])
+def update_account():
+    form = AccountForm()
+    if form.validate_on_submit():
+        user = shipmate.query.filter_by(nickname=form.username.data).first()
+        user.set_password(form.password.data)
+    return render_template('my_account.html', title='My account')
