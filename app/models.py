@@ -19,6 +19,7 @@ class shipmate(db.Model, UserMixin):
     first_name = db.Column(db.String(64), index=True, nullable=False)
     surname = db.Column(db.String(64), index=True, nullable=False)
     nickname = db.Column(db.String(64), index=True, unique=True, nullable=False)
+    email = db.Column(db.String(128), index=True, unique=True, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
     proposals = db.relationship('event', backref='organiser', lazy='dynamic')
     responses = db.relationship('proposal_response', backref='responder', lazy='dynamic')

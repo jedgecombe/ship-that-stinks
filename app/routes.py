@@ -3,7 +3,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.urls import url_parse
 
 from app import app, db
-from app.forms import AccountForm, EventForm, LoginForm, ResponseForm
+from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, RegistrationForm
 from app.models import event, proposal_response, shipmate
 
 
@@ -25,6 +25,22 @@ def login():
     return render_template('login.html', title='Sign In', form=form)
 
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = shipmate(first_name=form.first_name.data, surname=form.surname.data,
+                        nickname=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)
+
+
 @app.route('/logout')
 def logout():
     logout_user()
@@ -41,7 +57,8 @@ def response():
     form = ResponseForm()
     if form.validate_on_submit():
         flash("You've responded to the event '{}'".format(focus_event.event_name))
-        new_response = proposal_response(response=form.response.data, event=focus_event.id, shipmate=current_user.id)
+        new_response = proposal_response(response=form.response.data,
+                                         event=focus_event.id, shipmate=current_user.id)
         db.session.add(new_response)
         db.session.commit()
         return redirect(url_for('index'))
@@ -88,7 +105,7 @@ def update_account():
         print('POST')
         if form.validate_on_submit():
             print('VALIDATE')
-            user = shipmate.query.filter_by(nickname=form.username.data).first()
+            user = shipmate.query.filter_by(id=current_user.id).first()
             user.set_password(form.password.data)
             db.session.add(user)
             db.session.commit()

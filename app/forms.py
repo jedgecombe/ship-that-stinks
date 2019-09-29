@@ -4,8 +4,10 @@ from flask_wtf import FlaskForm
 from wtforms import (BooleanField, PasswordField, RadioField, StringField,
                      SubmitField)
 from wtforms.fields.html5 import DateField
-from wtforms.validators import DataRequired
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from wtforms_components import DateRange, TimeField
+
+from app.models import shipmate
 
 
 class EventForm(FlaskForm):
@@ -21,6 +23,33 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
+
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    first_name = StringField('First name', validators=[DataRequired()])
+    surname = StringField('Surname', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    password2 = PasswordField(
+        'Repeat Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Register')
+
+    def validate_username(self, username):
+        user = shipmate.query.filter_by(nickname=username.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different username.')
+
+    def validate_email(self, email):
+        user = shipmate.query.filter_by(email=email.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different email address.')
+
+# class SignUpFrom(FlaskForm):
+#
+#     email = StringField('Sign Up', validators=[DataRequired()])
+#     password = PasswordField('Password', validators=[DataRequired()])
+#     submit = SubmitField('Sign Up')
 
 
 class ResponseForm(FlaskForm):

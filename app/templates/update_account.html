@@ -6,11 +6,12 @@
     <h2>My account</h2>
   </div>
 
-  <form action="{{ url_for('users.user_password_change') }}" method="POST">
+  <form action="{{ url_for('update_account') }}" method="POST">
   {{ form.csrf_token }}
-    <dl>
-      {{ render_field(form.password, placeholder="Enter New Password") }}
-    </dl>
+    <p>
+    {{ form.password.label }}<br>
+    {{ form.password(size=32) }}
+    </p>
     <button class="btn btn-sm btn-success" type="submit">Update</button>
   </form>
 </div>
