@@ -2,18 +2,20 @@ import datetime
 
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 from app import db, login
 
 
 @login.user_loader
 def load_user(id):
-    return shipmate.query.get(int(id))
+    return User.query.get(int(id))
 
 
-class shipmate(db.Model, UserMixin):
-
-    __tablename__ = "shipmates"
+class User(db.Model, UserMixin):
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(64), index=True, nullable=False)
@@ -21,8 +23,9 @@ class shipmate(db.Model, UserMixin):
     nickname = db.Column(db.String(64), index=True, unique=True, nullable=False)
     email = db.Column(db.String(128), index=True, unique=True, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
-    proposals = db.relationship('event', backref='organiser', lazy='dynamic')
-    responses = db.relationship('proposal_response', backref='responder', lazy='dynamic')
+    proposals = db.relationship('Event', backref='organiser', lazy='dynamic')
+    responses = db.relationship('ProposalResponse', backref='responder', lazy='dynamic')
+    attendances = db.relationship('Attendance', back_populates='user')
     password_hash = db.Column(db.String(128), nullable=False)
 
     def set_password(self, password):
@@ -33,32 +36,48 @@ class shipmate(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
 
 
-class proposal_response(db.Model):
-
-    __tablename__ = "proposal_response"
+class ProposalResponse(db.Model):
+    __tablename__ = "proposal_responses"
 
     id = db.Column(db.Integer, primary_key=True)
     response_datetime = db.Column(db.DateTime, index=True, nullable=False, default=datetime.datetime.now)
     response = db.Column(db.String(32), index=True, nullable=False)
     response_status = db.Column(db.String(32), index=True, default="Open")
     event = db.Column(db.Integer, db.ForeignKey('events.id'))
-    shipmate = db.Column(db.Integer, db.ForeignKey('shipmates.id'))
+    user = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 
-class event(db.Model):
-
+class Event(db.Model):
     __tablename__ = "events"
 
     id = db.Column(db.Integer, primary_key=True)
     event_name = db.Column(db.String(64), index=True)
     event_date = db.Column(db.Date, index=True, nullable=False)
     event_time = db.Column(db.Time, index=True, nullable=False)
+    event_end_date = db.Column(db.Date, index=True, nullable=False)
+    event_end_time = db.Column(db.Time, index=True, nullable=False)
     event_location = db.Column(db.String(128))
     event_status = db.Column(db.String(32),index=True, nullable=False, default="Open")
-    created_at = db.Column(db.DateTime, index=True, default=datetime.datetime.now().date)
-    organised_by = db.Column(db.Integer, db.ForeignKey('shipmates.id'))
-    responses = db.relationship('proposal_response', backref='event_proposal', lazy='dynamic')
+    created_at = db.Column(db.DateTime, index=True, default=datetime.datetime.now())
+    organised_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    responses = db.relationship('ProposalResponse', backref='event_proposal', lazy='dynamic')
+    attendees = db.relationship('Attendance', back_populates='event')
 
 
-#    def __repr__(self):
-#        return '<User {}>'.format(self.username)
+class Attendance(db.Model):
+    __tablename__ = "attendance"
+
+    id = db.Column(db.Integer, primary_key=True)
+    recorded_at = db.Column(db.DateTime, index=True, default=datetime.datetime.now())
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    user = db.relationship('User', back_populates='attendances')
+    event = db.relationship('Event', back_populates='attendees')
+
+
+
+# attendance_association_table = db.Table('association',
+#                                      Base.metadata,
+#                                      db.Column('shipmate_id', db.Integer, db.ForeignKey('shipmate_id')),
+#                                      db.Column('event_id', db.Integer, db.ForeignKey ('event_id')))

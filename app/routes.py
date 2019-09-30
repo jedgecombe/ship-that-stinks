@@ -1,10 +1,13 @@
+import datetime
+
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy import and_
 from werkzeug.urls import url_parse
 
 from app import app, db
 from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, RegistrationForm
-from app.models import event, proposal_response, shipmate
+from app.models import Event, ProposalResponse, User
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -13,7 +16,7 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = shipmate.query.filter_by(nickname=form.username.data).first()
+        user = User.query.filter_by(nickname=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
@@ -31,7 +34,7 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = shipmate(first_name=form.first_name.data, surname=form.surname.data,
+        user = User(first_name=form.first_name.data, surname=form.surname.data,
                         nickname=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
         db.session.add(user)
@@ -51,14 +54,14 @@ def logout():
 @login_required
 def response():
     if request.args.get('modify'):
-        proposal_response.query.filter_by(id=request.args.get('response_id')).update(
+        ProposalResponse.query.filter_by(id=request.args.get('response_id')).update(
             dict(response_status="Closed"))
-    focus_event = event.query.get(request.args['event_id'])
+    focus_event = Event.query.get(request.args['event_id'])
     form = ResponseForm()
     if form.validate_on_submit():
         flash("You've responded to the event '{}'".format(focus_event.event_name))
-        new_response = proposal_response(response=form.response.data,
-                                         event=focus_event.id, shipmate=current_user.id)
+        new_response = ProposalResponse(response=form.response.data,
+                                         event=focus_event.id, user=current_user.id)
         db.session.add(new_response)
         db.session.commit()
         return redirect(url_for('index'))
@@ -69,26 +72,31 @@ def response():
 @app.route('/index')
 @login_required
 def index():
-    events = event.query.filter_by(event_status="Open").order_by(event.event_date).all()
+    events = Event.query.filter_by(event_status="Open").order_by(Event.event_date).all()
 #    proposals = user.proposals.all()
     return render_template('index.html', title='Home', events=events)
 
+@app.route('/previous_events')
+@login_required
+def previous_events():
+    events = Event.query.filter(and_(Event.event_date <= datetime.datetime.now(), Event.event_status=="Open")).all()
+    return render_template('previous_events.html', title='Home', events=events)
 
 @app.route('/create_event', methods=['GET', 'POST'])
 def create_event():
     if request.args.get('modify'):
-        focus_event = event.query.get(request.args.get('event_id'))
+        focus_event = Event.query.get(request.args.get('event_id'))
         form = EventForm(obj=focus_event)
         event.query.filter_by(id=focus_event.id).update(dict(event_status="Closed"))
     else:
         form = EventForm()
     if form.validate_on_submit():
-        print(type(form.event_date.data), form.event_date.data)
-        print(type(form.event_time.data), form.event_time.data)
         flash("Event proposal for '{}' sent".format(form.event_name.data))
-        new_event = event(event_name=form.event_name.data,
+        new_event = Event(event_name=form.event_name.data,
                           event_date=form.event_date.data,
                           event_time=form.event_time.data,
+                          event_end_date=form.event_end_date.data,
+                          event_end_time=form.event_end_time.data,
                           event_location=form.event_location.data,
                           organised_by=current_user.id)
         db.session.add(new_event)
@@ -102,10 +110,8 @@ def create_event():
 def update_account():
     form = AccountForm()
     if request.method == 'POST':
-        print('POST')
         if form.validate_on_submit():
-            print('VALIDATE')
-            user = shipmate.query.filter_by(id=current_user.id).first()
+            user = User.query.filter_by(id=current_user.id).first()
             user.set_password(form.password.data)
             db.session.add(user)
             db.session.commit()

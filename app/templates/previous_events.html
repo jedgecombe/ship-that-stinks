@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Previous events</h1>
+  {% if events %}
+    {% for event in events %}
+    <div class="event">
+      <h3> {{ event.event_name }} </h3>
+      <ul>
+        <li><b>When: </b> {{ event.event_date.strftime('%a, %b %-d, %Y') }} at {{ event.event_time.strftime('%H:%M') }}</li>
+        <li><b>Where: </b> {{ event.event_location }} </li>
+        {% if event.attendees %}
+          <h4>Attendees</h4>
+          {% for attendee in event.attendees %}
+            <ul>
+                <li> {{ attendee.user.nickname }}</li>
+            </ul>
+          {% endfor %}
+        {% endif %}
+        {% if event.organised_by == current_user.id %}
+        <li><i>Proposed by you</i></li>
+        {% else %}
+        <li><i>Proposed by {{ event.organiser.nickname }}</i></li>
+        {% if current_user.responses.filter_by(event=event.id).first() %}
+        <li><i>{{ current_user.responses.filter_by(event=event.id, response_status="Open").first().response }} on {{ current_user.responses.filter_by(event=event.id).first().response_datetime.strftime('%a, %b %-d') }} - <a href = " {{ url_for('response', modify=True, response_id=current_user.responses.filter_by(event=event.id, response_status="Open").first().id, event_id=event.id, ) }}">Modify your response</a></i></li>
+        {% else %}
+        <li><i><a href = "{{ url_for('response', event_id=event.id) }}">Respond</a> to this proposal</i></li>
+        {% endif %}
+        {% endif %}
+      </ul>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div>
+      <p>There are currently no previous events. Why not <a href = "{{ url_for('create_event') }}">create one</a>?
+    </div>
+  {% endif %}
+{% endblock %}

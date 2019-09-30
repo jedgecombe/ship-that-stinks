@@ -7,13 +7,16 @@ from wtforms.fields.html5 import DateField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from wtforms_components import DateRange, TimeField
 
-from app.models import shipmate
-
+from app.models import User
 
 class EventForm(FlaskForm):
     event_name = StringField('Event name', validators=[DataRequired()])
-    event_date = DateField('Event date', validators=[DataRequired(), DateRange(min=datetime.datetime.today().date())])
+    event_date = DateField('Event date', validators=[DataRequired(), DateRange(
+        min=datetime.datetime.today().date())])
     event_time = TimeField('Event time', validators=[DataRequired()])
+    event_end_date = DateField('Event end date', validators=[DataRequired(), DateRange(
+        min=datetime.datetime.today().date())])
+    event_end_time = TimeField('Event end time', validators=[DataRequired()])
     event_location = StringField('Event location', validators=[DataRequired()])
     submit = SubmitField('Propose Event')
 
@@ -36,20 +39,14 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Register')
 
     def validate_username(self, username):
-        user = shipmate.query.filter_by(nickname=username.data).first()
+        user = User.query.filter_by(nickname=username.data).first()
         if user is not None:
             raise ValidationError('Please use a different username.')
 
     def validate_email(self, email):
-        user = shipmate.query.filter_by(email=email.data).first()
+        user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Please use a different email address.')
-
-# class SignUpFrom(FlaskForm):
-#
-#     email = StringField('Sign Up', validators=[DataRequired()])
-#     password = PasswordField('Password', validators=[DataRequired()])
-#     submit = SubmitField('Sign Up')
 
 
 class ResponseForm(FlaskForm):
