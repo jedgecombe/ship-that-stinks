@@ -53,8 +53,64 @@ EVENTS = [
      "status": "Open",
      "created_at": "2019-10-05 10:00:05",
      "organised_by": 2
+     },
+    {"name": "Catan",
+     "start_date": "2019-10-02",
+     "start_time": "20:30",
+     "end_date": "2019-10-02",
+     "end_time": "21:30",
+     "location": "Jal's",
+     "status": "Open",
+     "created_at": "2019-10-01 09:30:00",
+     "organised_by": 1
+     },
+    {"name": "Baby Shower",
+     "start_date": "2020-04-01",
+     "start_time": "13:00",
+     "end_date": "2020-04-01",
+     "end_time": "14:00",
+     "location": "Sam's",
+     "status": "Open",
+     "created_at": "2019-10-04 10:00:05",
+     "organised_by": 4
+     },
+    {"name": "IHKN",
+     "start_date": "2019-11-30",
+     "start_time": "20:00",
+     "end_date": "2019-12-01",
+     "end_time": "00:00",
+     "location": "Dyl's",
+     "status": "Open",
+     "created_at": "2019-10-05 10:00:05",
+     "organised_by": 3
      }
 ]
+
+RESPONSES = [
+    {
+        "response_datetime": "2019-10-06 10:00:05",
+        "response": "Accept",
+        "response_status": "Closed",
+        "event": 1,
+        "user": 2
+    },
+    {
+        "response_datetime": "2019-10-06 10:10:05",
+        "response": "Decline",
+        "response_status": "Open",
+        "event": 1,
+        "user": 2
+    },
+    {
+        "response_datetime": "2019-10-06 11:10:05",
+        "response": "Accept",
+        "response_status": "Open",
+        "event": 2,
+        "user": 4
+    }
+]
+
+# TODO add more responses and 
 
 for user in USERS:
     u = User(first_name=user["first_name"], surname=user["surname"], nickname=user["nickname"], email=user["email"])

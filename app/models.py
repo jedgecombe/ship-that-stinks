@@ -40,8 +40,13 @@ class ProposalResponse(db.Model):
     __tablename__ = "proposal_responses"
 
     id = db.Column(db.Integer, primary_key=True)
-    response_datetime = db.Column(db.DateTime, index=True, nullable=False, default=datetime.datetime.now)
+    # TODO change col name to 'timestamp'
+    response_datetime = db.Column(db.DateTime, index=True, nullable=False,
+                                  default=datetime.datetime.now)
+    # TODO change col name to 'description'
+    # TODO should we have a responses table with 'description' and 'id' as columns?
     response = db.Column(db.String(32), index=True, nullable=False)
+    # TODO change col name to 'status'
     response_status = db.Column(db.String(32), index=True, default="Open")
     event = db.Column(db.Integer, db.ForeignKey('events.id'))
     user = db.Column(db.Integer, db.ForeignKey('users.id'))
