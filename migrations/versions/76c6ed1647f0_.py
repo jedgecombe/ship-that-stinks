@@ -32,8 +32,8 @@ def upgrade():
     op.create_index(op.f('ix_shipmates_surname'), 'shipmates', ['surname'], unique=False)
     op.create_table('events',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('event_name', sa.String(length=64), nullable=True),
-    sa.Column('event_date', sa.Date(), nullable=False),
+    sa.Column('name', sa.String(length=64), nullable=True),
+    sa.Column('start_date', sa.Date(), nullable=False),
     sa.Column('event_time', sa.Time(), nullable=False),
     sa.Column('event_location', sa.String(length=128), nullable=True),
     sa.Column('event_status', sa.String(length=32), nullable=False),
@@ -43,8 +43,8 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_events_created_at'), 'events', ['created_at'], unique=False)
-    op.create_index(op.f('ix_events_event_date'), 'events', ['event_date'], unique=False)
-    op.create_index(op.f('ix_events_event_name'), 'events', ['event_name'], unique=False)
+    op.create_index(op.f('ix_events_event_date'), 'events', ['start_date'], unique=False)
+    op.create_index(op.f('ix_events_event_name'), 'events', ['name'], unique=False)
     op.create_index(op.f('ix_events_event_status'), 'events', ['event_status'], unique=False)
     op.create_index(op.f('ix_events_event_time'), 'events', ['event_time'], unique=False)
     op.create_table('ProposalResponse',

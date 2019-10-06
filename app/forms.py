@@ -10,14 +10,14 @@ from wtforms_components import DateRange, TimeField
 from app.models import User
 
 class EventForm(FlaskForm):
-    event_name = StringField('Event name', validators=[DataRequired()])
-    event_date = DateField('Event date', validators=[DataRequired(), DateRange(
+    name = StringField('Event name', validators=[DataRequired()])
+    start_date = DateField('Event date', validators=[DataRequired(), DateRange(
         min=datetime.datetime.today().date())])
-    event_time = TimeField('Event time', validators=[DataRequired()])
-    event_end_date = DateField('Event end date', validators=[DataRequired(), DateRange(
+    start_time = TimeField('Event time', validators=[DataRequired()])
+    end_date = DateField('Event end date', validators=[DataRequired(), DateRange(
         min=datetime.datetime.today().date())])
-    event_end_time = TimeField('Event end time', validators=[DataRequired()])
-    event_location = StringField('Event location', validators=[DataRequired()])
+    end_time = TimeField('Event end time', validators=[DataRequired()])
+    location = StringField('Event location', validators=[DataRequired()])
     submit = SubmitField('Propose Event')
 
 

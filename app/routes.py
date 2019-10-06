@@ -59,7 +59,7 @@ def response():
     focus_event = Event.query.get(request.args['event_id'])
     form = ResponseForm()
     if form.validate_on_submit():
-        flash("You've responded to the event '{}'".format(focus_event.event_name))
+        flash("You've responded to the event '{}'".format(focus_event.name))
         new_response = ProposalResponse(response=form.response.data,
                                          event=focus_event.id, user=current_user.id)
         db.session.add(new_response)
@@ -72,14 +72,14 @@ def response():
 @app.route('/index')
 @login_required
 def index():
-    events = Event.query.filter_by(event_status="Open").order_by(Event.event_date).all()
+    events = Event.query.filter_by(status="Open").order_by(Event.start_date).all()
 #    proposals = user.proposals.all()
     return render_template('index.html', title='Home', events=events)
 
 @app.route('/previous_events')
 @login_required
 def previous_events():
-    events = Event.query.filter(and_(Event.event_date <= datetime.datetime.now(), Event.event_status=="Open")).all()
+    events = Event.query.filter(and_(Event.start_date <= datetime.datetime.now(), Event.status=="Open")).all()
     return render_template('previous_events.html', title='Home', events=events)
 
 @app.route('/create_event', methods=['GET', 'POST'])
@@ -87,17 +87,17 @@ def create_event():
     if request.args.get('modify'):
         focus_event = Event.query.get(request.args.get('event_id'))
         form = EventForm(obj=focus_event)
-        event.query.filter_by(id=focus_event.id).update(dict(event_status="Closed"))
+        Event.query.filter_by(id=focus_event.id).update(dict(status="Closed"))
     else:
         form = EventForm()
     if form.validate_on_submit():
-        flash("Event proposal for '{}' sent".format(form.event_name.data))
-        new_event = Event(event_name=form.event_name.data,
-                          event_date=form.event_date.data,
-                          event_time=form.event_time.data,
-                          event_end_date=form.event_end_date.data,
-                          event_end_time=form.event_end_time.data,
-                          event_location=form.event_location.data,
+        flash("Event proposal for '{}' sent".format(form.name.data))
+        new_event = Event(name=form.name.data,
+                          start_date=form.start_date.data,
+                          start_time=form.start_time.data,
+                          end_date=form.end_date.data,
+                          end_time=form.end_time.data,
+                          location=form.location.data,
                           organised_by=current_user.id)
         db.session.add(new_event)
         db.session.commit()
