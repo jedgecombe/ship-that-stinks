@@ -65,9 +65,9 @@ class AccountForm(FlaskForm):
     submit = SubmitField('Update')
 
 
-# class RegisterAttendanceForm(FlaskForm):
-#     users = User.query.all()
-#     nicknames = [(user.id, user.nickname) for user in users]
-#     user_ids = MultiCheckboxField('Label', choices=nicknames)
-#
-#     submit = SubmitField('Register attendance')
+class RegisterAttendanceForm(FlaskForm):
+    users = User.query.all()
+    nicknames = [(user.id, user.nickname) for user in users]
+    user_ids = MultiCheckboxField('Label', choices=nicknames)
+
+    submit = SubmitField('Register attendance')
