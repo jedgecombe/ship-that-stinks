@@ -9,25 +9,26 @@
       <ul>
         <li><b>When: </b> {{ event.start_date.strftime('%a, %b %-d, %Y') }} at {{ event.start_time.strftime('%H:%M') }}</li>
         <li><b>Where: </b> {{ event.location }} </li>
+      </ul>
         {% if event.attendees %}
           <h4>Attendees</h4>
-          {% for attendee in event.attendees %}
             <ul>
+          {% for attendee in event.attendees %}
                 <li> {{ attendee.user.nickname }}</li>
-            </ul>
           {% endfor %}
+            </ul>
         {% endif %}
         {% if event.organised_by == current_user.id %}
-        <li><i>Proposed by you</i></li>
+        <i>Proposed by you</i>
+        <a href="{{ url_for('register_attendance', event_id=event.id) }}">Register attendance</a>
         {% else %}
-        <li><i>Proposed by {{ event.organiser.nickname }}</i></li>
+        <i>Proposed by {{ event.organiser.nickname }}</i>
         {% if current_user.responses.filter_by(event=event.id).first() %}
         <li><i>{{ current_user.responses.filter_by(event=event.id, response_status="Open").first().response }} on {{ current_user.responses.filter_by(event=event.id).first().response_datetime.strftime('%a, %b %-d') }} - <a href = " {{ url_for('response', modify=True, response_id=current_user.responses.filter_by(event=event.id, response_status="Open").first().id, event_id=event.id, ) }}">Modify your response</a></i></li>
         {% else %}
         <li><i><a href = "{{ url_for('response', event_id=event.id) }}">Respond</a> to this proposal</i></li>
         {% endif %}
         {% endif %}
-      </ul>
     </div>
     {% endfor %}
   {% else %}

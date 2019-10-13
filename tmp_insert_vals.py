@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from app.models import Event, User
+from app.models import Event, User, ProposalResponse
 from app import db
 
 USERS = [
@@ -107,13 +107,43 @@ RESPONSES = [
         "response_status": "Open",
         "event": 2,
         "user": 4
+    },
+    {
+        "response_datetime": "2019-10-06 11:15:13",
+        "response": "Accept",
+        "response_status": "Open",
+        "event": 2,
+        "user": 5
+    },
+    {
+        "response_datetime": "2019-10-06 10:15:13",
+        "response": "Accept",
+        "response_status": "Open",
+        "event": 4,
+        "user": 2
+    },
+    {
+        "response_datetime": "2019-10-06 10:45:13",
+        "response": "Accept",
+        "response_status": "Open",
+        "event": 4,
+        "user": 3
+    },
+    {
+        "response_datetime": "2019-10-06 10:33:13",
+        "response": "Decline",
+        "response_status": "Open",
+        "event": 4,
+        "user": 1
     }
+
 ]
 
-# TODO add more responses and 
+# TODO add more responses and
 
 for user in USERS:
-    u = User(first_name=user["first_name"], surname=user["surname"], nickname=user["nickname"], email=user["email"])
+    u = User(first_name=user["first_name"], surname=user["surname"],
+             nickname=user["nickname"], email=user["email"])
     u.set_password("password")
     db.session.add(u)
     db.session.commit()
@@ -125,6 +155,14 @@ for event in EVENTS:
               status=event["status"], created_at=event["created_at"],
               organised_by=event["organised_by"])
     db.session.add(e)
+    db.session.commit()
+
+for resp in RESPONSES:
+    r = ProposalResponse(response_datetime=resp["response_datetime"],
+                         response=resp["response"],
+                         response_status=resp["response_status"], event=resp["event"],
+                         user=resp["user"])
+    db.session.add(r)
     db.session.commit()
 
 

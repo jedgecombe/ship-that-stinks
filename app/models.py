@@ -76,6 +76,7 @@ class Attendance(db.Model):
     recorded_at = db.Column(db.DateTime, index=True, default=datetime.datetime.now())
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    # TODO add is_current to log people messing with stuff
 
     user = db.relationship('User', back_populates='attendances')
     event = db.relationship('Event', back_populates='attendees')

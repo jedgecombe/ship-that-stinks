@@ -6,8 +6,8 @@ from sqlalchemy import and_
 from werkzeug.urls import url_parse
 
 from app import app, db
-from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, RegistrationForm
-from app.models import Event, ProposalResponse, User
+from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, RegistrationForm, RegisterAttendanceForm
+from app.models import Attendance, Event, ProposalResponse, User
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -73,7 +73,6 @@ def response():
 @login_required
 def index():
     events = Event.query.filter_by(status="Open").order_by(Event.start_date).all()
-#    proposals = user.proposals.all()
     return render_template('index.html', title='Home', events=events)
 
 @app.route('/previous_events')
@@ -118,3 +117,31 @@ def update_account():
             flash('Password has been updated!', 'success')
             return redirect(url_for('index'))
     return render_template('update_account.html', title='My account', form=form)
+
+
+@app.route('/register_attendance', methods=['GET', 'POST'])
+# @login_required
+def register_attendance():
+    event_id = request.args.get('event_id')
+    if event_id and current_user.id == Event.query.get(event_id).organised_by:
+        focus_event = Event.query.get(event_id)
+        form = RegisterAttendanceForm(obj=focus_event)
+
+        if request.method == "POST":
+            selected_users = request.form.getlist("user_ids")
+            db.session.query(Attendance).filter_by(event_id=event_id).delete()
+            # registered_attendees = Attendance.query.filter_by(event_id=event_id)
+            # db.session.delete(registered_attendees)
+            db.session.commit()
+            # d = addresses_table.delete().where(addresses_table.c.retired == 1)
+            for user in selected_users:
+                attendance = Attendance(recorded_at=datetime.datetime.now(),
+                                        event_id=event_id, user_id=user)
+                db.session.add(attendance)
+                db.session.commit()
+            return redirect(url_for('previous_events'))
+    else:
+        return redirect(url_for('previous_events'))
+    # TODO add else to pick up alternative form
+    return render_template('register_attendance.html', title='Register attendance', form=form)
+

@@ -2,12 +2,18 @@ import datetime
 
 from flask_wtf import FlaskForm
 from wtforms import (BooleanField, PasswordField, RadioField, StringField,
-                     SubmitField)
+                     SubmitField, SelectMultipleField, widgets)
 from wtforms.fields.html5 import DateField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from wtforms_components import DateRange, TimeField
 
 from app.models import User
+
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+
 
 class EventForm(FlaskForm):
     name = StringField('Event name', validators=[DataRequired()])
@@ -57,3 +63,11 @@ class ResponseForm(FlaskForm):
 class AccountForm(FlaskForm):
     password = PasswordField('Change password', validators=[DataRequired()])
     submit = SubmitField('Update')
+
+
+class RegisterAttendanceForm(FlaskForm):
+    users = User.query.all()
+    nicknames = [(user.id, user.nickname) for user in users]
+    user_ids = MultiCheckboxField('Label', choices=nicknames)
+
+    submit = SubmitField('Register attendance')
