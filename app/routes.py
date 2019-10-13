@@ -6,7 +6,7 @@ from sqlalchemy import and_
 from werkzeug.urls import url_parse
 
 from app import app, db
-from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, RegistrationForm, RegisterAttendanceForm
+from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, RegistrationForm
 from app.models import Attendance, Event, ProposalResponse, User
 
 
