@@ -71,3 +71,4 @@ class RegisterAttendanceForm(FlaskForm):
     user_ids = MultiCheckboxField('Label', choices=nicknames)
 
     submit = SubmitField('Register attendance')
+

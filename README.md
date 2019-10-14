@@ -7,6 +7,9 @@ https://postgresapp.com/documentation/cli-tools.html
 
 Postgres migration: https://realpython.com/flask-by-example-part-2-postgres-sqlalchemy-and-alembic/
 
+To connect to heroku postgres:
+heroku pg:psql -a shipthatstinks-api-heroku
+
 Initial run on heroku
 To reset previous database:
 1. heroku restart

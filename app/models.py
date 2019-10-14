@@ -81,9 +81,3 @@ class Attendance(db.Model):
     user = db.relationship('User', back_populates='attendances')
     event = db.relationship('Event', back_populates='attendees')
 
-
-
-# attendance_association_table = db.Table('association',
-#                                      Base.metadata,
-#                                      db.Column('shipmate_id', db.Integer, db.ForeignKey('shipmate_id')),
-#                                      db.Column('event_id', db.Integer, db.ForeignKey ('event_id')))

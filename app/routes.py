@@ -72,13 +72,13 @@ def response():
 @app.route('/index')
 @login_required
 def index():
-    events = Event.query.filter_by(status="Open").order_by(Event.start_date).all()
+    events = Event.query.filter(and_(Event.start_date > datetime.datetime.now(), Event.status=="Open")).order_by(Event.start_date).all()
     return render_template('index.html', title='Home', events=events)
 
 @app.route('/previous_events')
 @login_required
 def previous_events():
-    events = Event.query.filter(and_(Event.start_date <= datetime.datetime.now(), Event.status=="Open")).all()
+    events = Event.query.filter(and_(Event.start_date <= datetime.datetime.now(), Event.status=="Open")).order_by(Event.start_date.desc()).all()
     return render_template('previous_events.html', title='Home', events=events)
 
 @app.route('/create_event', methods=['GET', 'POST'])
