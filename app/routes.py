@@ -81,12 +81,17 @@ def previous_events():
     events = Event.query.filter(and_(Event.start_date <= datetime.datetime.now(), Event.status=="Open")).order_by(Event.start_date.desc()).all()
     return render_template('previous_events.html', title='Home', events=events)
 
+
 @app.route('/create_event', methods=['GET', 'POST'])
 def create_event():
-    if request.args.get('modify'):
+    if request.args.get('modify') or request.args.get('delete'):
         focus_event = Event.query.get(request.args.get('event_id'))
-        form = EventForm(obj=focus_event)
         Event.query.filter_by(id=focus_event.id).update(dict(status="Closed"))
+        db.session.commit()
+        if request.args.get('delete'):
+            return redirect(url_for('index'))
+        else:
+            form = EventForm(obj=focus_event)
     else:
         form = EventForm()
     if form.validate_on_submit():
