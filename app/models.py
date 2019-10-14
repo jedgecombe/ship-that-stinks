@@ -48,8 +48,11 @@ class ProposalResponse(db.Model):
     response = db.Column(db.String(32), index=True, nullable=False)
     # TODO change col name to 'status'
     response_status = db.Column(db.String(32), index=True, default="Open")
+    # TODO change to event_id
     event = db.Column(db.Integer, db.ForeignKey('events.id'))
+    # TODO change to user_id
     user = db.Column(db.Integer, db.ForeignKey('users.id'))
+
 
 
 class Event(db.Model):

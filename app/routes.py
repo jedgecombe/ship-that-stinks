@@ -130,10 +130,7 @@ def register_attendance():
         if request.method == "POST":
             selected_users = request.form.getlist("user_ids")
             db.session.query(Attendance).filter_by(event_id=event_id).delete()
-            # registered_attendees = Attendance.query.filter_by(event_id=event_id)
-            # db.session.delete(registered_attendees)
             db.session.commit()
-            # d = addresses_table.delete().where(addresses_table.c.retired == 1)
             for user in selected_users:
                 attendance = Attendance(recorded_at=datetime.datetime.now(),
                                         event_id=event_id, user_id=user)
