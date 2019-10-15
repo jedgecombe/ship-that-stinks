@@ -134,11 +134,8 @@ def register_attendance():
         focus_event = Event.query.get(event_id)
         form = RegisterAttendanceForm(obj=focus_event)
         if request.method == "POST":
-            print(event_id)
             selected_users = request.form.getlist("user_ids")
-            currently_recorded = Attendance.query.filter_by(event_id=2)
-
-            print(currently_recorded)
+            currently_recorded = Attendance.query.filter_by(event_id=event_id)
             currently_recorded.update({"is_active": False})
             db.session.commit()
             for user in selected_users:
