@@ -13,16 +13,16 @@
         <li>Proposed by you - <a href = " {{ url_for('create_event', modify=True, event_id=event.id) }}">Modify this event</a> - <a href = " {{ url_for('create_event', delete=True, event_id=event.id) }}">Delete this event</a></li>
         {% else %}
         <li>Proposed by {{ event.user.nickname }} on {{ current_user.responses.filter_by(event_id=event.id).first().created_at.strftime('%a, %b %-d') }}</li>
-        {% if event.responses.filter_by(status="Open") %}
+        {% if event.responses.filter_by(is_active=True) %}
           <h4>Responses</h4>
             <ul>
-          {% for responder in event.responses.filter_by(status="Open") %}
+          {% for responder in event.responses.filter_by(is_active=True) %}
                 <li>{{ responder.user.nickname }} - {{ responder.description }} </li>
           {% endfor %}
             </ul>
         {% endif %}
         {% if current_user.responses.filter_by(event_id=event.id).first() %}
-        <li>{{ current_user.responses.filter_by(event_id=event.id, status="Open").first().response }}  <a href = " {{ url_for('response', modify=True, response_id=current_user.responses.filter_by(event_id=event.id, status="Open").first().id, event_id=event.id) }}">Modify your response</a></li>
+        <li>{{ current_user.responses.filter_by(event_id=event.id, is_active=True).first().response }}  <a href = " {{ url_for('response', modify=True, response_id=current_user.responses.filter_by(event_id=event.id, is_active=True).first().id, event_id=event.id) }}">Modify your response</a></li>
         {% else %}
         <li><a href = "{{ url_for('response', event_id=event.id) }}">Respond</a> to this proposal</li>
         {% endif %}

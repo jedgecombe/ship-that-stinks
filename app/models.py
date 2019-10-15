@@ -45,7 +45,7 @@ class ProposalResponse(db.Model):
     created_at = db.Column(db.DateTime, index=True, nullable=False,
                            default=datetime.datetime.now)
     description = db.Column(db.String(32), index=True, nullable=False, default="Accept")
-    status = db.Column(db.String(32), index=True, default="Open")
+    is_active = db.Column(db.Boolean, index=True, default="Open")
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
@@ -63,7 +63,7 @@ class Event(db.Model):
     end_date = db.Column(db.Date, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
     location = db.Column(db.String(128))
-    status = db.Column(db.String(32), nullable=False, default="Open")
+    is_active = db.Column(db.Boolean, nullable=False, default="Open")
     created_at = db.Column(db.DateTime, default=datetime.datetime.now())
     organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
 
@@ -77,7 +77,7 @@ class Attendance(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, index=True)
     recorded_at = db.Column(db.DateTime, default=datetime.datetime.now())
-    is_current = db.Column(db.Boolean, nullable=True)
+    is_active = db.Column(db.Boolean, nullable=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
 

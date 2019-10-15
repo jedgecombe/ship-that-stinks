@@ -55,12 +55,12 @@ def logout():
 def response():
     if request.args.get('modify'):
         ProposalResponse.query.filter_by(id=request.args.get('response_id')).update(
-            dict(status="Closed"))
+            dict(is_active="Closed"))
     focus_event = Event.query.get(request.args['event_id'])
     form = ResponseForm()
     if form.validate_on_submit():
         flash(f"You've responded to the event '{focus_event.name}'")
-        new_response = ProposalResponse(description=form.response.data, status="Open",
+        new_response = ProposalResponse(description=form.response.data, is_active=True,
                                         event_id=focus_event.id,
                                         user_id=current_user.id)
         db.session.add(new_response)
@@ -73,13 +73,14 @@ def response():
 @app.route('/index')
 @login_required
 def index():
-    events = Event.query.filter(and_(Event.start_date > datetime.datetime.now(), Event.status=="Open")).order_by(Event.start_date).all()
+    events = Event.query.filter(and_(Event.start_date > datetime.datetime.now(),
+                                     Event.is_active)).order_by(Event.start_date).all()
     return render_template('index.html', title='Home', events=events)
 
 @app.route('/previous_events')
 @login_required
 def previous_events():
-    events = Event.query.filter(and_(Event.start_date <= datetime.datetime.now(), Event.status=="Open")).order_by(Event.start_date.desc()).all()
+    events = Event.query.filter(and_(Event.start_date <= datetime.datetime.now(), Event.is_active)).order_by(Event.start_date.desc()).all()
     return render_template('previous_events.html', title='Home', events=events)
 
 
@@ -87,7 +88,7 @@ def previous_events():
 def create_event():
     if request.args.get('modify') or request.args.get('delete'):
         focus_event = Event.query.get(request.args.get('event_id'))
-        Event.query.filter_by(id=focus_event.id).update(dict(status="Closed"))
+        Event.query.filter_by(id=focus_event.id).update(dict(is_active=False))
         db.session.commit()
         if request.args.get('delete'):
             return redirect(url_for('index'))
@@ -126,23 +127,24 @@ def update_account():
 
 
 @app.route('/register_attendance', methods=['GET', 'POST'])
-# TODO add this back in
-# @login_required
+@login_required
 def register_attendance():
     event_id = request.args.get('event_id')
     if event_id and current_user.id == Event.query.get(event_id).organised_by:
         focus_event = Event.query.get(event_id)
         form = RegisterAttendanceForm(obj=focus_event)
-
         if request.method == "POST":
+            print(event_id)
             selected_users = request.form.getlist("user_ids")
-            # TODO change this to chaning to is_current = False, see response()
-            db.session.query(Attendance).filter_by(event_id=event_id).delete()
+            currently_recorded = Attendance.query.filter_by(event_id=2)
+
+            print(currently_recorded)
+            currently_recorded.update({"is_active": False})
             db.session.commit()
             for user in selected_users:
                 attendance = Attendance(recorded_at=datetime.datetime.now(),
                                         event_id=event_id, user_id=user,
-                                        is_current=True)
+                                        is_active=True)
                 db.session.add(attendance)
                 db.session.commit()
             return redirect(url_for('previous_events'))

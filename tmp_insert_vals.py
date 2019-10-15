@@ -50,7 +50,7 @@ EVENTS = [
      "end_date": "2019-12-01",
      "end_time": "14:00",
      "location": "Marv's",
-     "status": "Open",
+     "is_active": True,
      "created_at": "2019-10-05 10:00:05",
      "organised_by": 2
      },
@@ -60,7 +60,7 @@ EVENTS = [
      "end_date": "2019-10-02",
      "end_time": "21:30",
      "location": "Jal's",
-     "status": "Open",
+     "is_active": True,
      "created_at": "2019-10-01 09:30:00",
      "organised_by": 1
      },
@@ -70,7 +70,7 @@ EVENTS = [
      "end_date": "2020-04-01",
      "end_time": "14:00",
      "location": "Sam's",
-     "status": "Open",
+     "is_active": True,
      "created_at": "2019-10-04 10:00:05",
      "organised_by": 4
      },
@@ -80,7 +80,7 @@ EVENTS = [
      "end_date": "2019-12-01",
      "end_time": "00:00",
      "location": "Dyl's",
-     "status": "Open",
+     "is_active": True,
      "created_at": "2019-10-05 10:00:05",
      "organised_by": 3
      }
@@ -90,49 +90,49 @@ RESPONSES = [
     {
         "created_at": "2019-10-06 10:00:05",
         "description": "Accept",
-        "status": "Closed",
+        "is_active": False,
         "event": 1,
         "user": 2
     },
     {
         "created_at": "2019-10-06 10:10:05",
         "description": "Decline",
-        "status": "Open",
+        "is_active": True,
         "event": 1,
         "user": 2
     },
     {
         "created_at": "2019-10-06 11:10:05",
         "description": "Accept",
-        "status": "Open",
+        "is_active": True,
         "event": 2,
         "user": 4
     },
     {
         "created_at": "2019-10-06 11:15:13",
         "description": "Accept",
-        "status": "Open",
+        "is_active": True,
         "event": 2,
         "user": 5
     },
     {
         "created_at": "2019-10-06 10:15:13",
         "description": "Accept",
-        "status": "Open",
+        "is_active": True,
         "event": 4,
         "user": 2
     },
     {
         "created_at": "2019-10-06 10:45:13",
         "description": "Accept",
-        "status": "Open",
+        "is_active": True,
         "event": 4,
         "user": 3
     },
     {
         "created_at": "2019-10-06 10:33:13",
         "description": "Decline",
-        "status": "Open",
+        "is_active": True,
         "event": 4,
         "user": 1
     }
@@ -152,7 +152,7 @@ for event in EVENTS:
     e = Event(name=event["name"], start_date=event["start_date"],
               start_time=event["start_time"], end_date=event["end_date"],
               end_time=event["end_time"], location=event["location"],
-              status=event["status"], created_at=event["created_at"],
+              is_active=event["is_active"], created_at=event["created_at"],
               organised_by=event["organised_by"])
     db.session.add(e)
     db.session.commit()
@@ -160,7 +160,7 @@ for event in EVENTS:
 for resp in RESPONSES:
     r = ProposalResponse(created_at=resp["created_at"],
                          description=resp["description"],
-                         status=resp["status"], event=resp["event"],
+                         is_active=resp["is_active"], event=resp["event"],
                          user=resp["user"])
     db.session.add(r)
     db.session.commit()

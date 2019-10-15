@@ -37,3 +37,6 @@ flask run
 
 Show tables `\dt`
 * delete all rows from table: `TRUNCATE TABLE users CASCADE;`
+
+
+Daily backups set with: heroku `pg:backups:schedule --at '04:00 Europe/London' --app shipthatstinks-api-heroku`
