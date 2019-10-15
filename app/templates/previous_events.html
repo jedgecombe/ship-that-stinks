@@ -24,7 +24,7 @@
         {% else %}
         <i>Proposed by {{ event.organiser.nickname }}</i>
         {% if current_user.responses.filter_by(event=event.id).first() %}
-        <li><i>{{ current_user.responses.filter_by(event=event.id, response_status="Open").first().response }} on {{ current_user.responses.filter_by(event=event.id).first().response_datetime.strftime('%a, %b %-d') }} - <a href = " {{ url_for('response', modify=True, response_id=current_user.responses.filter_by(event=event.id, response_status="Open").first().id, event_id=event.id, ) }}">Modify your response</a></i></li>
+        <li><i>{{ current_user.responses.filter_by(event=event.id, status="Open").first().response }} on {{ current_user.responses.filter_by(event=event.id).first().created_at.strftime('%a, %b %-d') }} - <a href = " {{ url_for('response', modify=True, response_id=current_user.responses.filter_by(event=event.id, response_status="Open").first().id, event_id=event.id, ) }}">Modify your response</a></i></li>
         {% else %}
         <li><i><a href = "{{ url_for('response', event_id=event.id) }}">Respond</a> to this proposal</i></li>
         {% endif %}

@@ -10,13 +10,21 @@
         <li><b>When: </b> {{ event.start_date.strftime('%a, %b %-d, %Y') }} at {{ event.start_time.strftime('%H:%M') }}</li>
         <li><b>Where: </b> {{ event.location }} </li>
         {% if event.organised_by == current_user.id %}
-        <li><i>Proposed by you - {{ event.responses.filter_by(response_status="Open").count() }} responses - <a href = " {{ url_for('create_event', modify=True, event_id=event.id) }}">Modify this event</a> - <a href = " {{ url_for('create_event', delete=True, event_id=event.id) }}">Delete this event</a></i></li>
+        <li>Proposed by you - <a href = " {{ url_for('create_event', modify=True, event_id=event.id) }}">Modify this event</a> - <a href = " {{ url_for('create_event', delete=True, event_id=event.id) }}">Delete this event</a></li>
         {% else %}
-        <li><i>Proposed by {{ event.organiser.nickname }}</i></li>
-        {% if current_user.responses.filter_by(event=event.id).first() %}
-        <li><i>{{ current_user.responses.filter_by(event=event.id, response_status="Open").first().response }} on {{ current_user.responses.filter_by(event=event.id).first().response_datetime.strftime('%a, %b %-d') }} - <a href = " {{ url_for('response', modify=True, response_id=current_user.responses.filter_by(event=event.id, response_status="Open").first().id, event_id=event.id, ) }}">Modify your response</a></i></li>
+        <li>Proposed by {{ event.user.nickname }} on {{ current_user.responses.filter_by(event_id=event.id).first().created_at.strftime('%a, %b %-d') }}</li>
+        {% if event.responses.filter_by(status="Open") %}
+          <h4>Responses</h4>
+            <ul>
+          {% for responder in event.responses.filter_by(status="Open") %}
+                <li>{{ responder.user.nickname }} - {{ responder.description }} </li>
+          {% endfor %}
+            </ul>
+        {% endif %}
+        {% if current_user.responses.filter_by(event_id=event.id).first() %}
+        <li>{{ current_user.responses.filter_by(event_id=event.id, status="Open").first().response }}  <a href = " {{ url_for('response', modify=True, response_id=current_user.responses.filter_by(event_id=event.id, status="Open").first().id, event_id=event.id) }}">Modify your response</a></li>
         {% else %}
-        <li><i><a href = "{{ url_for('response', event_id=event.id) }}">Respond</a> to this proposal</i></li>
+        <li><a href = "{{ url_for('response', event_id=event.id) }}">Respond</a> to this proposal</li>
         {% endif %}
         {% endif %}
       </ul>

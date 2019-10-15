@@ -88,51 +88,51 @@ EVENTS = [
 
 RESPONSES = [
     {
-        "response_datetime": "2019-10-06 10:00:05",
-        "response": "Accept",
-        "response_status": "Closed",
+        "created_at": "2019-10-06 10:00:05",
+        "description": "Accept",
+        "status": "Closed",
         "event": 1,
         "user": 2
     },
     {
-        "response_datetime": "2019-10-06 10:10:05",
-        "response": "Decline",
-        "response_status": "Open",
+        "created_at": "2019-10-06 10:10:05",
+        "description": "Decline",
+        "status": "Open",
         "event": 1,
         "user": 2
     },
     {
-        "response_datetime": "2019-10-06 11:10:05",
-        "response": "Accept",
-        "response_status": "Open",
+        "created_at": "2019-10-06 11:10:05",
+        "description": "Accept",
+        "status": "Open",
         "event": 2,
         "user": 4
     },
     {
-        "response_datetime": "2019-10-06 11:15:13",
-        "response": "Accept",
-        "response_status": "Open",
+        "created_at": "2019-10-06 11:15:13",
+        "description": "Accept",
+        "status": "Open",
         "event": 2,
         "user": 5
     },
     {
-        "response_datetime": "2019-10-06 10:15:13",
-        "response": "Accept",
-        "response_status": "Open",
+        "created_at": "2019-10-06 10:15:13",
+        "description": "Accept",
+        "status": "Open",
         "event": 4,
         "user": 2
     },
     {
-        "response_datetime": "2019-10-06 10:45:13",
-        "response": "Accept",
-        "response_status": "Open",
+        "created_at": "2019-10-06 10:45:13",
+        "description": "Accept",
+        "status": "Open",
         "event": 4,
         "user": 3
     },
     {
-        "response_datetime": "2019-10-06 10:33:13",
-        "response": "Decline",
-        "response_status": "Open",
+        "created_at": "2019-10-06 10:33:13",
+        "description": "Decline",
+        "status": "Open",
         "event": 4,
         "user": 1
     }
@@ -158,9 +158,9 @@ for event in EVENTS:
     db.session.commit()
 
 for resp in RESPONSES:
-    r = ProposalResponse(response_datetime=resp["response_datetime"],
-                         response=resp["response"],
-                         response_status=resp["response_status"], event=resp["event"],
+    r = ProposalResponse(created_at=resp["created_at"],
+                         description=resp["description"],
+                         status=resp["status"], event=resp["event"],
                          user=resp["user"])
     db.session.add(r)
     db.session.commit()

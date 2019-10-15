@@ -55,13 +55,14 @@ def logout():
 def response():
     if request.args.get('modify'):
         ProposalResponse.query.filter_by(id=request.args.get('response_id')).update(
-            dict(response_status="Closed"))
+            dict(status="Closed"))
     focus_event = Event.query.get(request.args['event_id'])
     form = ResponseForm()
     if form.validate_on_submit():
-        flash("You've responded to the event '{}'".format(focus_event.name))
-        new_response = ProposalResponse(response=form.response.data,
-                                         event=focus_event.id, user=current_user.id)
+        flash(f"You've responded to the event '{focus_event.name}'")
+        new_response = ProposalResponse(description=form.response.data, status="Open",
+                                        event_id=focus_event.id,
+                                        user_id=current_user.id)
         db.session.add(new_response)
         db.session.commit()
         return redirect(url_for('index'))
@@ -125,6 +126,7 @@ def update_account():
 
 
 @app.route('/register_attendance', methods=['GET', 'POST'])
+# TODO add this back in
 # @login_required
 def register_attendance():
     event_id = request.args.get('event_id')
@@ -134,11 +136,13 @@ def register_attendance():
 
         if request.method == "POST":
             selected_users = request.form.getlist("user_ids")
+            # TODO change this to chaning to is_current = False, see response()
             db.session.query(Attendance).filter_by(event_id=event_id).delete()
             db.session.commit()
             for user in selected_users:
                 attendance = Attendance(recorded_at=datetime.datetime.now(),
-                                        event_id=event_id, user_id=user)
+                                        event_id=event_id, user_id=user,
+                                        is_current=True)
                 db.session.add(attendance)
                 db.session.commit()
             return redirect(url_for('previous_events'))

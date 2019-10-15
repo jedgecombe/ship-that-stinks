@@ -23,9 +23,11 @@ class User(db.Model, UserMixin):
     nickname = db.Column(db.String(64), index=True, unique=True, nullable=False)
     email = db.Column(db.String(128), index=True, unique=True, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
-    proposals = db.relationship('Event', backref='organiser', lazy='dynamic')
-    responses = db.relationship('ProposalResponse', backref='responder', lazy='dynamic')
-    attendances = db.relationship('Attendance', back_populates='user')
+    # TODO sort out these relationships
+
+    events = db.relationship('Event', back_populates='user', lazy='dynamic')
+    responses = db.relationship('ProposalResponse', back_populates='user', lazy='dynamic')
+    attendances = db.relationship('Attendance', back_populates='user', lazy='dynamic')
     password_hash = db.Column(db.String(128), nullable=False)
 
     def set_password(self, password):
@@ -40,47 +42,44 @@ class ProposalResponse(db.Model):
     __tablename__ = "proposal_responses"
 
     id = db.Column(db.Integer, primary_key=True)
-    # TODO change col name to 'timestamp'
-    response_datetime = db.Column(db.DateTime, index=True, nullable=False,
-                                  default=datetime.datetime.now)
-    # TODO change col name to 'description'
-    # TODO should we have a responses table with 'description' and 'id' as columns?
-    response = db.Column(db.String(32), index=True, nullable=False)
-    # TODO change col name to 'status'
-    response_status = db.Column(db.String(32), index=True, default="Open")
-    # TODO change to event_id
-    event = db.Column(db.Integer, db.ForeignKey('events.id'))
-    # TODO change to user_id
-    user = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_at = db.Column(db.DateTime, index=True, nullable=False,
+                           default=datetime.datetime.now)
+    description = db.Column(db.String(32), index=True, nullable=False, default="Accept")
+    status = db.Column(db.String(32), index=True, default="Open")
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+    user = db.relationship('User', back_populates='responses')
+    event = db.relationship('Event', back_populates='responses')
 
 
 class Event(db.Model):
     __tablename__ = "events"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True)
-    start_date = db.Column(db.Date, index=True, nullable=False)
-    start_time = db.Column(db.Time, index=True, nullable=False)
-    end_date = db.Column(db.Date, index=True, nullable=False)
-    end_time = db.Column(db.Time, index=True, nullable=False)
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    name = db.Column(db.String(64), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
     location = db.Column(db.String(128))
-    status = db.Column(db.String(32),index=True, nullable=False, default="Open")
-    created_at = db.Column(db.DateTime, index=True, default=datetime.datetime.now())
-    organised_by = db.Column(db.Integer, db.ForeignKey('users.id'))
-    responses = db.relationship('ProposalResponse', backref='event_proposal', lazy='dynamic')
-    attendees = db.relationship('Attendance', back_populates='event')
+    status = db.Column(db.String(32), nullable=False, default="Open")
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now())
+    organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
+
+    user = db.relationship('User', back_populates='events')
+    responses = db.relationship('ProposalResponse', back_populates='event', lazy='dynamic')
+    attendees = db.relationship('Attendance', back_populates='event', lazy='dynamic')
 
 
 class Attendance(db.Model):
     __tablename__ = "attendance"
 
-    id = db.Column(db.Integer, primary_key=True)
-    recorded_at = db.Column(db.DateTime, index=True, default=datetime.datetime.now())
-    event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    # TODO add is_current to log people messing with stuff
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    recorded_at = db.Column(db.DateTime, default=datetime.datetime.now())
+    is_current = db.Column(db.Boolean, nullable=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
 
     user = db.relationship('User', back_populates='attendances')
     event = db.relationship('Event', back_populates='attendees')
-
