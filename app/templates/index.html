@@ -12,7 +12,7 @@
         {% if event.organised_by == current_user.id %}
         <li>Proposed by you - <a href = " {{ url_for('create_event', modify=True, event_id=event.id) }}">Modify this event</a> - <a href = " {{ url_for('create_event', delete=True, event_id=event.id) }}">Delete this event</a></li>
         {% else %}
-        <li>Proposed by {{ event.user.nickname }} on {{ current_user.responses.filter_by(event_id=event.id).first().created_at.strftime('%a, %b %-d') }}</li>
+        <li>Proposed by {{ event.user.nickname }} on {{ event.created_at.strftime('%a, %b %-d') }}</li>
         {% if event.responses.filter_by(is_active=True) %}
           <h4>Responses</h4>
             <ul>

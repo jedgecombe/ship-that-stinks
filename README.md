@@ -16,7 +16,7 @@ To reset previous database:
 2. heroku restart --confirm shipthatstinks-api-heroku
 
 To setup tables remotely: 
-1. heroku run python
+1. heroku run python -a shipthatstinks-api-heroku
 2. from app import db
 3. db.create_all()
 
