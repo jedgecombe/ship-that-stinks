@@ -13,6 +13,7 @@
         <li>Proposed by you - <a href = " {{ url_for('create_event', modify=True, event_id=event.id) }}">Modify this event</a> - <a href = " {{ url_for('create_event', delete=True, event_id=event.id) }}">Delete this event</a></li>
         {% else %}
         <li>Proposed by {{ event.user.nickname }} on {{ event.created_at.strftime('%a, %b %-d') }}</li>
+        {% endif %}
         {% if event.responses.filter_by(is_active=True) %}
           <h4>Responses</h4>
             <ul>
@@ -25,7 +26,6 @@
         <li>{{ current_user.responses.filter_by(event_id=event.id, is_active=True).first().response }}  <a href = " {{ url_for('response', modify=True, response_id=current_user.responses.filter_by(event_id=event.id, is_active=True).first().id, event_id=event.id) }}">Modify your response</a></li>
         {% else %}
         <li><a href = "{{ url_for('response', event_id=event.id) }}">Respond</a> to this proposal</li>
-        {% endif %}
         {% endif %}
       </ul>
     </div>
