@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
@@ -55,7 +55,7 @@ def logout():
 def response():
     if request.args.get('modify'):
         ProposalResponse.query.filter_by(id=request.args.get('response_id')).update(
-            dict(is_active="Closed"))
+            dict(is_active=False))
     focus_event = Event.query.get(request.args['event_id'])
     form = ResponseForm()
     if form.validate_on_submit():
@@ -73,14 +73,14 @@ def response():
 @app.route('/index')
 @login_required
 def index():
-    events = Event.query.filter(and_(Event.start_date > datetime.datetime.now(),
-                                     Event.is_active)).order_by(Event.start_date).all()
+    events = Event.query.filter(and_(Event.start_at > datetime.now(),
+                                     Event.is_active)).order_by(Event.start_at).all()
     return render_template('index.html', title='Home', events=events)
 
 @app.route('/previous_events')
 @login_required
 def previous_events():
-    events = Event.query.filter(and_(Event.start_date <= datetime.datetime.now(), Event.is_active)).order_by(Event.start_date.desc()).all()
+    events = Event.query.filter(and_(Event.start_at <= datetime.now(), Event.is_active)).order_by(Event.start_at.desc()).all()
     return render_template('previous_events.html', title='Home', events=events)
 
 
@@ -97,12 +97,16 @@ def create_event():
     else:
         form = EventForm()
     if form.validate_on_submit():
-        flash("Event proposal for '{}' sent".format(form.name.data))
+        flash(f"Event proposal for '{form.name.data}' sent")
+        start_at = datetime.strptime(
+            f"{form.start_date.data} {form.start_time.data}", '%Y-%m-%d %H:%M:%S')
+        end_at = datetime.strptime(f"{form.end_date.data} {form.end_time.data}",
+                                         '%Y-%m-%d %H:%M:%S')
+        notice_days = round((end_at - start_at).days, 1)
         new_event = Event(name=form.name.data,
-                          start_date=form.start_date.data,
-                          start_time=form.start_time.data,
-                          end_date=form.end_date.data,
-                          end_time=form.end_time.data,
+                          start_at=start_at,
+                          end_at=end_at,
+                          notice_days=notice_days,
                           location=form.location.data,
                           organised_by=current_user.id)
         db.session.add(new_event)
@@ -139,7 +143,7 @@ def register_attendance():
             currently_recorded.update({"is_active": False})
             db.session.commit()
             for user in selected_users:
-                attendance = Attendance(recorded_at=datetime.datetime.now(),
+                attendance = Attendance(recorded_at=datetime.now(),
                                         event_id=event_id, user_id=user,
                                         is_active=True)
                 db.session.add(attendance)
