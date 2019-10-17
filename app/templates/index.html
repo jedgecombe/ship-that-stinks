@@ -12,7 +12,7 @@
         {% if event.organised_by == current_user.id %}
         <li>Proposed by you - <a href = " {{ url_for('create_event', modify=True, event_id=event.id) }}">Modify this event</a> - <a href = " {{ url_for('create_event', delete=True, event_id=event.id) }}">Delete this event</a></li>
         {% else %}
-        <li>Proposed by {{ event.user.nickname }} on {{ event.created_at.strftime('%a, %b %-d') }}</li>
+        <li>Proposed by {{ event.organiser.nickname }} on {{ event.created_at.strftime('%a, %b %-d') }} ({{ event.notice_days }} days notice)</li>
         {% endif %}
         {% if event.responses.filter_by(is_active=True) %}
           <h4>Responses</h4>

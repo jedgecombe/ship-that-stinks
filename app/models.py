@@ -23,9 +23,11 @@ class User(db.Model, UserMixin):
     nickname = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(128), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    # indicator for user with special privileges e.g. arranging end of cycle event
+    is_admin = db.Column(db.Boolean, nullable=False, default=False)
     password_hash = db.Column(db.String(128), nullable=False)
     # TODO sort out these relationships
-    events = db.relationship('Event', back_populates='user', lazy='dynamic')
+    events_organised = db.relationship('Event', back_populates='organiser', lazy='dynamic')
     responses = db.relationship('ProposalResponse', back_populates='user', lazy='dynamic')
     attendances = db.relationship('Attendance', back_populates='user', lazy='dynamic')
 
@@ -43,7 +45,7 @@ class ProposalResponse(db.Model):
     id = db.Column(db.Integer, primary_key=True, index=True)
     created_at = db.Column(db.DateTime,  nullable=False,  default=datetime.now())
     description = db.Column(db.String(32), nullable=False, default="Accept")
-    is_active = db.Column(db.Boolean, default=True)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
 
@@ -61,10 +63,22 @@ class Event(db.Model):
     location = db.Column(db.String(128))
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now())
-    notice_days = db.Column(db.Float, nullable=False)
     organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
 
-    user = db.relationship('User', back_populates='events')
+    # has the organiser confirmed the event is going ahead
+    is_confirmed = db.Column(db.Boolean, nullable=False, default=True)
+    # number of days created in advance of start
+    notice_days = db.Column(db.Integer, nullable=False)
+    # multiplier used for the notice score component
+    notice_mult = db.Column(db.Float, nullable=False)
+    # number of attendees recorded - NULL, until attendance is recorded
+    attendee_cnt = db.Column(db.Integer)
+    # multiplier user for the attendee score component
+    attendee_mult = db.Column(db.Float)
+    # points per attendee
+    points_pp = db.Column(db.Float)
+
+    organiser = db.relationship('User', back_populates='events_organised')
     responses = db.relationship('ProposalResponse', back_populates='event', lazy='dynamic')
     attendees = db.relationship('Attendance', back_populates='event', lazy='dynamic')
 

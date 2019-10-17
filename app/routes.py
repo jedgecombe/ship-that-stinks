@@ -8,6 +8,7 @@ from werkzeug.urls import url_parse
 from app import app, db
 from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, RegistrationForm, RegisterAttendanceForm
 from app.models import Attendance, Event, ProposalResponse, User
+from app.points import attendance_score, notice_score
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -56,6 +57,7 @@ def response():
     if request.args.get('modify'):
         ProposalResponse.query.filter_by(id=request.args.get('response_id')).update(
             dict(is_active=False))
+        db.session.commit()
     focus_event = Event.query.get(request.args['event_id'])
     form = ResponseForm()
     if form.validate_on_submit():
@@ -85,6 +87,7 @@ def previous_events():
 
 
 @app.route('/create_event', methods=['GET', 'POST'])
+@login_required
 def create_event():
     if request.args.get('modify') or request.args.get('delete'):
         focus_event = Event.query.get(request.args.get('event_id'))
@@ -107,6 +110,7 @@ def create_event():
                           start_at=start_at,
                           end_at=end_at,
                           notice_days=notice_days,
+                          notice_mult=notice_score(notice_days),
                           location=form.location.data,
                           organised_by=current_user.id)
         db.session.add(new_event)
@@ -148,9 +152,16 @@ def register_attendance():
                                         is_active=True)
                 db.session.add(attendance)
                 db.session.commit()
+            attendance_cnt = len(selected_users)
+            attendance_mult = attendance_score(attendance_cnt)
+            notice_mult = Event.query.get(event_id).notice_mult
+            Event.query.filter_by(id=event_id).update(
+                dict(attendee_cnt=attendance_cnt,
+                     attendee_mult=attendance_mult,
+                     points_pp=round(attendance_mult*notice_mult, 1)))
+            db.session.commit()
             return redirect(url_for('previous_events'))
     else:
         return redirect(url_for('previous_events'))
-    # TODO add else to pick up alternative form
     return render_template('register_attendance.html', title='Register attendance', form=form)
 
