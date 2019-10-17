@@ -105,7 +105,7 @@ def create_event():
             f"{form.start_date.data} {form.start_time.data}", '%Y-%m-%d %H:%M:%S')
         end_at = datetime.strptime(f"{form.end_date.data} {form.end_time.data}",
                                          '%Y-%m-%d %H:%M:%S')
-        notice_days = round((end_at - start_at).days, 1)
+        notice_days = (start_at - datetime.now()).days
         new_event = Event(name=form.name.data,
                           start_at=start_at,
                           end_at=end_at,
