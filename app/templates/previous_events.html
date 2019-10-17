@@ -7,13 +7,12 @@
     <div class="event">
       <h3> {{ event.name }} </h3>
       <ul>
-        <li><b>When: </b> {{ event.start_at.strftime('%a, %b %-d, %Y') }} at {{ event.start_at.strftime('%H:%M') }}</li>
           <div>
-              <p>
-                  Days notice: {{ event.notice_days }} <br>
-                  Number of shipmates: {{ event.attendee_cnt }} <br>
-                  Plunder per shipmate: {{ event.points_pp }}
-              </p>
+
+           <li>When: {{ event.start_at.strftime('%a, %b %-d, %Y') }} at {{ event.start_at.strftime('%H:%M') }}</li>
+           <li>Days notice: {{ event.notice_days }}</li>
+           <li>Number of shipmates: {{ event.attendee_cnt }}</li>
+           <li>Plunder per shipmate: {{ event.points_pp }}</li>
           </div>
       </ul>
         {% if event.attendees.filter_by(is_active=True) %}
