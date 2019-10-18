@@ -95,7 +95,7 @@ def points():
     ).join(Attendance, User.id == Attendance.user_id).join(
         Event, Attendance.event_id == Event.id
     ).filter(Attendance.is_active).group_by(User.id).order_by(
-        desc('points_sum'), desc('attendance_cnt'), desc("nickname"))
+        desc('points_sum'), desc('attendance_cnt'), "nickname")
     logger.debug(f"points query: {query}")
     results = query.all()
     logger.debug(f"points results: {results}")
