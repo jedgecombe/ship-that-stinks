@@ -27,8 +27,10 @@ To setup tables locally:
 2. from app import db
 3. db.create_all()
 
-To then run flask app locally:
-flask run
+To migrate database
+1. MAYBE NECESSARY - delete `migrations/`
+2. flask db init
+3. flask db migrate
 
 
 ## Running Postgres Locally

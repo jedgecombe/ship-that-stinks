@@ -1,7 +1,6 @@
 from collections import namedtuple
 from datetime import datetime
 import logging
-from operator import attrgetter
 
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
@@ -9,11 +8,13 @@ from sqlalchemy import and_, desc, func
 from werkzeug.urls import url_parse
 
 from app import app, db
-from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, RegistrationForm, RegisterAttendanceForm
+from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, \
+    RegistrationForm, RegisterAttendanceForm
 from app.models import Attendance, Event, ProposalResponse, User
 from app.points import attendance_score, notice_score
 
 logger = logging.getLogger(__name__)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -40,7 +41,7 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(first_name=form.first_name.data, surname=form.surname.data,
-                        nickname=form.username.data, email=form.email.data)
+                    nickname=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
@@ -72,7 +73,8 @@ def response():
         db.session.add(new_response)
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('response.html', title='Respond to an event proposal', event=focus_event, form=form)
+    return render_template('response.html', title='Respond to an event proposal',
+                           event=focus_event, form=form)
 
 
 @app.route('/')
@@ -109,7 +111,9 @@ def points():
 @app.route('/previous_events')
 @login_required
 def previous_events():
-    events = Event.query.filter(and_(Event.start_at <= datetime.now(), Event.is_active)).order_by(Event.start_at.desc()).all()
+    events = Event.query.filter(
+        and_(Event.start_at <= datetime.now(), Event.is_active)).order_by(
+        Event.start_at.desc()).all()
     return render_template('previous_events.html', title='Home', events=events)
 
 
@@ -185,10 +189,10 @@ def register_attendance():
             Event.query.filter_by(id=event_id).update(
                 dict(attendee_cnt=attendance_cnt,
                      attendee_mult=attendance_mult,
-                     points_pp=round(attendance_mult*notice_mult, 1)))
+                     points_pp=round(attendance_mult * notice_mult, 1)))
             db.session.commit()
             return redirect(url_for('previous_events'))
     else:
         return redirect(url_for('previous_events'))
-    return render_template('register_attendance.html', title='Register attendance', form=form)
-
+    return render_template('register_attendance.html', title='Register attendance',
+                           form=form)
