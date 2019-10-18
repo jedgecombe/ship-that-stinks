@@ -14,7 +14,6 @@ class Config:
     SECRET_KEY = 'probably_impossible_to_guess'
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    print(SQLALCHEMY_DATABASE_URI)
 
 
 class ProductionConfig(Config):

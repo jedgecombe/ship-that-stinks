@@ -25,6 +25,7 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now())
     # indicator for user with special privileges e.g. arranging end of cycle event
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
+    # TODO add is_viewer (or something) - can't create events and isn't included in the scoring. Should we have a roles table?
     password_hash = db.Column(db.String(128), nullable=False)
     # TODO sort out these relationships
     events_organised = db.relationship('Event', back_populates='organiser', lazy='dynamic')

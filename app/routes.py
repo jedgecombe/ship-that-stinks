@@ -1,8 +1,11 @@
+from collections import namedtuple
 from datetime import datetime
+import logging
+from operator import attrgetter
 
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
-from sqlalchemy import and_
+from sqlalchemy import and_, desc, func
 from werkzeug.urls import url_parse
 
 from app import app, db
@@ -10,6 +13,7 @@ from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, Registrat
 from app.models import Attendance, Event, ProposalResponse, User
 from app.points import attendance_score, notice_score
 
+logger = logging.getLogger(__name__)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -79,6 +83,29 @@ def index():
                                      Event.is_active)).order_by(Event.start_at).all()
     return render_template('index.html', title='Home', events=events)
 
+
+@app.route('/points')
+@login_required
+def points():
+    # TODO fix to show 0 plunder for someone with no events - need to LEFT JOIN but also subquery to avoid filter forcing inner
+    query = db.session.query(
+        User.nickname,
+        func.coalesce(func.count(Attendance.id), 0).label('attendance_cnt'),
+        func.coalesce(func.sum(Event.points_pp), 0).label('points_sum')
+    ).join(Attendance, User.id == Attendance.user_id).join(
+        Event, Attendance.event_id == Event.id
+    ).filter(Attendance.is_active).group_by(User.id).order_by(
+        desc('points_sum'), desc('attendance_cnt'), desc("nickname"))
+    logger.debug(f"points query: {query}")
+    results = query.all()
+    logger.debug(f"points results: {results}")
+    UserGrp = namedtuple("UserGrp", ["nickname", "attendance_cnt", "points_sum"])
+    html_input = []
+    for nn, ac, ps in results:
+        html_input.append(UserGrp(nn, ac, ps))
+    return render_template('points.html', title='Points', users=html_input)
+
+
 @app.route('/previous_events')
 @login_required
 def previous_events():
@@ -102,9 +129,9 @@ def create_event():
     if form.validate_on_submit():
         flash(f"Event proposal for '{form.name.data}' sent")
         start_at = datetime.strptime(
-            f"{form.start_date.data} {form.start_time.data}", '%Y-%m-%d %H:%M:%S')
+            f"{form.start_date.data} {form.start_time.data}", "%Y-%m-%d %H:%M:%S")
         end_at = datetime.strptime(f"{form.end_date.data} {form.end_time.data}",
-                                         '%Y-%m-%d %H:%M:%S')
+                                   "%Y-%m-%d %H:%M:%S")
         notice_days = (start_at - datetime.now()).days
         new_event = Event(name=form.name.data,
                           start_at=start_at,
@@ -115,8 +142,8 @@ def create_event():
                           organised_by=current_user.id)
         db.session.add(new_event)
         db.session.commit()
-        return redirect(url_for('index'))
-    return render_template('create_event.html', title='Create an event', form=form)
+        return redirect(url_for("index"))
+    return render_template("create_event.html", title="Create an event", form=form)
 
 
 @app.route('/update_account', methods=['GET', 'POST'])
