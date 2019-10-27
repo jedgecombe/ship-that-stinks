@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from app.models import Event, User, ProposalResponse
+from app.models import EventEvents, User, ProposalResponse
 from app import db
 
 USERS = [
@@ -149,11 +149,11 @@ for user in USERS:
     db.session.commit()
 
 for event in EVENTS:
-    e = Event(name=event["name"], start_date=event["start_date"],
-              start_time=event["start_time"], end_date=event["end_date"],
-              end_time=event["end_time"], location=event["location"],
-              is_active=event["is_active"], created_at=event["created_at"],
-              organised_by=event["organised_by"])
+    e = EventEvents(name=event["name"], start_date=event["start_date"],
+                    start_time=event["start_time"], end_date=event["end_date"],
+                    end_time=event["end_time"], location=event["location"],
+                    is_active=event["is_active"], created_at=event["created_at"],
+                    organised_by=event["organised_by"])
     db.session.add(e)
     db.session.commit()
 

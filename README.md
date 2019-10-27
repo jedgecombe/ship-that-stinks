@@ -33,6 +33,9 @@ To migrate database
 3. generate changes - flask db migrate
 4. apply changes - flask db upgrade
 
+Retry release:
+heroku releases:retry --app shipthatstinks-api-heroku
+
 
 ## Running Postgres Locally
 * start postgres server `psql postgres`
