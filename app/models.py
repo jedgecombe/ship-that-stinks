@@ -31,7 +31,7 @@ class User(db.Model, UserMixin):
     # TODO add is_viewer (or something) - can't create events and isn't included in the scoring. Should we have a roles table?
     password_hash = db.Column(db.String(128), nullable=False)
     # TODO sort out these relationships
-    events_organised = db.relationship('Event', back_populates='organiser', lazy='dynamic')
+    # events_organised = db.relationship('Event', back_populates='organiser', lazy='dynamic')
     responses = db.relationship('ProposalResponse', back_populates='user', lazy='dynamic')
     attendances = db.relationship('Attendance', back_populates='user', lazy='dynamic')
 
@@ -100,7 +100,7 @@ class EventEvents(db.Model):
     # points per attendee
     points_pp = db.Column(db.Float)
 
-    event = db.relationship('Event', back_populates='updates')
+    # event = db.relationship('Event', back_populates='updates')
 
 
 class Event(db.Model):
@@ -109,11 +109,11 @@ class Event(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now())
     organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False,
                              index=True)
-    updates = db.relationship('EventEvents', back_populates='event', lazy='dynamic')
+    # updates = db.relationship('EventEvents', back_populates='event', lazy='dynamic')
     organiser = db.relationship('User', back_populates='events_organised')
-    attendees = db.relationship('Attendance', back_populates='event', lazy='dynamic')
-    responses = db.relationship('ProposalResponse', back_populates='event',
-                                lazy='dynamic')
+    # attendees = db.relationship('Attendance', back_populates='event', lazy='dynamic')
+    # responses = db.relationship('ProposalResponse', back_populates='event',
+    #                             lazy='dynamic')
 
 
 class Attendance(db.Model):
