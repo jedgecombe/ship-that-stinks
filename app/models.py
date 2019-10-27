@@ -98,7 +98,8 @@ class EventEvents(db.Model):
     # points per attendee
     points_pp = db.Column(db.Float)
 
-    event = db.relationship('Event', back_populates='updates')
+    # TODO add event
+    # event = db.relationship('Event', back_populates='updates')
 
 
 class Event(db.Model):
@@ -107,10 +108,8 @@ class Event(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now())
     organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False,
                              index=True)
-    # current_info = db.relationship('EventEvents', primaryjoin=and_(
-    #     id == EventEvents.event_id, EventEvents.is_active_update == True,
-    #     EventEvents.is_active == True))
-    updates = db.relationship('EventEvents', back_populates='event', lazy='dynamic')
+    # TODO add updates
+    # updates = db.relationship('EventEvents', back_populates='event', lazy='dynamic')
     organiser = db.relationship('User', back_populates='events_organised')
     attendees = db.relationship('Attendance', back_populates='event', lazy='dynamic')
     responses = db.relationship('ProposalResponse', back_populates='event',
