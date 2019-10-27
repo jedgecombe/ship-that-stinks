@@ -10,7 +10,7 @@ from werkzeug.urls import url_parse
 from app import app, db
 from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, \
     RegistrationForm, RegisterAttendanceForm
-from app.models import Attendance, Event, ProposalResponse, User
+from app.models import Attendance, EventEvents, Event, ProposalResponse, User
 from app.points import attendance_score, notice_score
 
 logger = logging.getLogger(__name__)
@@ -59,19 +59,23 @@ def logout():
 @app.route('/response', methods=['GET', 'POST'])
 @login_required
 def response():
-    if request.args.get('modify'):
-        ProposalResponse.query.filter_by(id=request.args.get('response_id')).update(
-            dict(is_active=False))
-        db.session.commit()
-    focus_event = Event.query.get(request.args['event_id'])
+    # TODO fix for when it is the creator of the event
+    # TODO NEXT finish here
+    event_id = request.args['event_id']
+    logger.debug(f'Responding to event id {event_id}')
+    focus_event = Event.query.get(event_id)
+
     form = ResponseForm()
     if form.validate_on_submit():
-        flash(f"You've responded to the event '{focus_event.name}'")
+        if request.args.get('modify'):
+            ProposalResponse.query.filter_by(id=request.args.get('response_id')).update(
+                dict(is_active=False))
         new_response = ProposalResponse(description=form.response.data, is_active=True,
-                                        event_id=focus_event.id,
+                                        event_id=event_id,
                                         user_id=current_user.id)
         db.session.add(new_response)
         db.session.commit()
+        flash(f"You've responded to the event")
         return redirect(url_for('index'))
     return render_template('response.html', title='Respond to an event proposal',
                            event=focus_event, form=form)
@@ -81,8 +85,22 @@ def response():
 @app.route('/index')
 @login_required
 def index():
-    events = Event.query.filter(and_(Event.start_at > datetime.now(),
-                                     Event.is_active)).order_by(Event.start_at).all()
+    # start_at, location, id, name, organised_by
+    #
+    # query = db.session.query(
+    #     Event.nickname,
+    #     func.coalesce(func.count(Attendance.id), 0).label('attendance_cnt'),
+    #     func.coalesce(func.sum(EventEvents.points_pp), 0).label('points_sum')
+    # ).join(Attendance, User.id == Attendance.user_id).join(
+    #     EventEvents, Attendance.event_id == EventEvents.id
+    # ).filter(Attendance.is_active).group_by(User.id).order_by(
+    #     desc('points_sum'), desc('attendance_cnt'), "nickname")
+
+    # TODO update to filter on events
+    q = EventEvents.query.filter(and_(EventEvents.start_at > datetime.now(),
+                                           EventEvents.is_active, EventEvents.is_active_update)).order_by(EventEvents.start_at)
+    print(q)
+    events = q.all()
     return render_template('index.html', title='Home', events=events)
 
 
@@ -93,9 +111,9 @@ def points():
     query = db.session.query(
         User.nickname,
         func.coalesce(func.count(Attendance.id), 0).label('attendance_cnt'),
-        func.coalesce(func.sum(Event.points_pp), 0).label('points_sum')
+        func.coalesce(func.sum(EventEvents.points_pp), 0).label('points_sum')
     ).join(Attendance, User.id == Attendance.user_id).join(
-        Event, Attendance.event_id == Event.id
+        EventEvents, Attendance.event_id == EventEvents.id
     ).filter(Attendance.is_active).group_by(User.id).order_by(
         desc('points_sum'), desc('attendance_cnt'), "nickname")
     logger.debug(f"points query: {query}")
@@ -111,43 +129,121 @@ def points():
 @app.route('/previous_events')
 @login_required
 def previous_events():
-    events = Event.query.filter(
-        and_(Event.start_at <= datetime.now(), Event.is_active)).order_by(
-        Event.start_at.desc()).all()
+    events = EventEvents.query.filter(
+        and_(EventEvents.start_at <= datetime.now(), EventEvents.is_active)).order_by(
+        EventEvents.start_at.desc()).all()
     return render_template('previous_events.html', title='Home', events=events)
 
 
+def get_event_params(form) -> dict:
+    start_at = dt_from_sql(f"{form.start_date.data} {form.start_time.data}")
+    end_at = dt_from_sql(f"{form.end_date.data} {form.end_time.data}")
+    notice_days = (start_at - datetime.now()).days
+    return {
+        "name": form.name.data,
+        "start_at": start_at,
+        "end_at": end_at,
+        "notice_days": notice_days,
+        "notice_mult": notice_score(notice_days),
+        "location": form.location.data,
+        "organised_by": current_user.id
+    }
+
+
+def create_new_event_id() -> str:
+    new_event_id = Event(organised_by=current_user.id, created_at=datetime.now())
+    db.session.add(new_event_id)
+    db.session.commit()
+    event_id = db.session.query(Event.id).filter(
+        Event.organised_by == current_user.id).order_by(
+        desc(Event.created_at), desc(Event.id)).first()
+    return event_id
+
+
+def delete_event():
+    REMOVE_KEYS = ['_sa_instance_state', 'id']
+    update_id = request.args.get('id')
+    logger.debug(f"deleting id: {update_id}")
+    original_event = EventEvents.query.filter_by(id=update_id)
+    # create new event with same parameters, except no longer active
+    event_kwargs = original_event.first().__dict__
+    for k in REMOVE_KEYS:
+        if k in event_kwargs:
+            del event_kwargs[k]
+    event_kwargs["is_active"] = False
+    event_kwargs["is_active_update"] = True
+    event_kwargs["update_created_at"] = datetime.now()
+    new_event = EventEvents(**event_kwargs)
+    logger.debug(f"creating new event with attributes: {event_kwargs}")
+    new_event.is_active = False
+    db.session.add(new_event)
+    # update original event to have is_active_update=False
+    original_event.update(dict(is_active_update=False))
+    db.session.commit()
+
+
+def modify_event(form):
+    MAX_HOURS_DIFF = 6  # maximum number of hours before an event is considered a new event
+    update_id = request.args.get('id')
+    original_event = EventEvents.query.filter_by(id=update_id)
+    original_event_id = original_event.first().event_id
+    if form.validate_on_submit():
+        event_kwargs = get_event_params(form)
+        prev_start_ats = db.session.query(EventEvents.start_at).filter(
+            EventEvents.event_id == original_event_id).all()
+        start_diffs = [abs((event_kwargs["start_at"] - x).total_seconds()) / 3600 for (x, ) in prev_start_ats]
+        max_start_diff = max(start_diffs)
+        if max_start_diff <= MAX_HOURS_DIFF:
+            event_kwargs["event_id"] = original_event_id
+            logger.debug(f"modifying existing event: {original_event_id}")
+        else:
+            event_kwargs["event_id"] = create_new_event_id()
+            logger.debug(f"creating new event id: {event_kwargs['event_id']} (from "
+                         f"event_id: {original_event_id})")
+        event_kwargs["is_active"] = True
+        event_kwargs["is_active_update"] = True
+        event_kwargs["update_created_at"] = datetime.now()
+        updated_event = EventEvents(**event_kwargs)
+        db.session.add(updated_event)
+        original_event.update(dict(is_active_update=False, is_active=False))
+        db.session.commit()
+        flash(f"EventEvents proposal for '{form.name.data}' sent")
+        return redirect(url_for("index"))
+
+
+def new_event(form):
+    if form.validate_on_submit():
+        event_kwargs = get_event_params(form)
+        event_kwargs["event_id"] = create_new_event_id()
+        event_new = EventEvents(**event_kwargs)
+        db.session.add(event_new)
+        db.session.commit()
+        flash(f"EventEvents proposal for '{form.name.data}' sent")
+        return redirect(url_for("index"))
+
+
+def dt_from_sql(time_string):
+    # TODO move to a utils module
+    return datetime.strptime(f"{time_string}", "%Y-%m-%d %H:%M:%S")
+
 @app.route('/create_event', methods=['GET', 'POST'])
 @login_required
+# TODO change name to not create_event()
 def create_event():
-    if request.args.get('modify') or request.args.get('delete'):
-        focus_event = Event.query.get(request.args.get('event_id'))
-        Event.query.filter_by(id=focus_event.id).update(dict(is_active=False))
-        db.session.commit()
-        if request.args.get('delete'):
-            return redirect(url_for('index'))
-        else:
-            form = EventForm(obj=focus_event)
-    else:
-        form = EventForm()
-    if form.validate_on_submit():
-        flash(f"Event proposal for '{form.name.data}' sent")
-        start_at = datetime.strptime(
-            f"{form.start_date.data} {form.start_time.data}", "%Y-%m-%d %H:%M:%S")
-        end_at = datetime.strptime(f"{form.end_date.data} {form.end_time.data}",
-                                   "%Y-%m-%d %H:%M:%S")
-        notice_days = (start_at - datetime.now()).days
-        new_event = Event(name=form.name.data,
-                          start_at=start_at,
-                          end_at=end_at,
-                          notice_days=notice_days,
-                          notice_mult=notice_score(notice_days),
-                          location=form.location.data,
-                          organised_by=current_user.id)
-        db.session.add(new_event)
-        db.session.commit()
+    if request.args.get('delete'):
+        delete_event()
         return redirect(url_for("index"))
-    return render_template("create_event.html", title="Create an event", form=form)
+    else:
+        if request.args.get('modify'):
+            update_id = request.args.get('id')
+            original_event = EventEvents.query.get(update_id)
+            form = EventForm(obj=original_event)
+            modify_event(form)
+        else:
+            form = EventForm()
+            new_event(form)
+            # TODO change so that it returns to index
+        return render_template("create_event.html", title="Create an event", form=form)
 
 
 @app.route('/update_account', methods=['GET', 'POST'])
@@ -169,8 +265,8 @@ def update_account():
 @login_required
 def register_attendance():
     event_id = request.args.get('event_id')
-    if event_id and current_user.id == Event.query.get(event_id).organised_by:
-        focus_event = Event.query.get(event_id)
+    if event_id and current_user.id == EventEvents.query.get(event_id).organised_by:
+        focus_event = EventEvents.query.get(event_id)
         form = RegisterAttendanceForm(obj=focus_event)
         if request.method == "POST":
             selected_users = request.form.getlist("user_ids")
@@ -185,11 +281,12 @@ def register_attendance():
                 db.session.commit()
             attendance_cnt = len(selected_users)
             attendance_mult = attendance_score(attendance_cnt)
-            notice_mult = Event.query.get(event_id).notice_mult
-            Event.query.filter_by(id=event_id).update(
+            notice_mult = EventEvents.query.get(event_id).notice_mult
+            EventEvents.query.filter_by(id=event_id).update(
                 dict(attendee_cnt=attendance_cnt,
                      attendee_mult=attendance_mult,
-                     points_pp=round(attendance_mult * notice_mult, 1)))
+                     points_pp=round(attendance_mult * notice_mult, 1),
+                     has_happened=True))
             db.session.commit()
             return redirect(url_for('previous_events'))
     else:

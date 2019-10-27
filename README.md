@@ -28,9 +28,10 @@ To setup tables locally:
 3. db.create_all()
 
 To migrate database
-1. MAYBE NECESSARY - delete `migrations/`
+1. MAYBE NECESSARY - delete .py file inside `migrations/versions`
 2. flask db init
-3. flask db migrate
+3. generate changes - flask db migrate
+4. apply changes - flask db upgrade
 
 
 ## Running Postgres Locally

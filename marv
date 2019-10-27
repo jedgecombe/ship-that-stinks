@@ -1,2 +1,0 @@
-"id", "first_name", "surname", "nickname", "created_at", "password_hash"
-"1", "James", "Marvin", "Marv", "2019-08-12 22:43:22.395767", "pbkdf2:sha256:150000$rw2XADiQ$8893ce99f3be168b135c190d24112106860aa04bf1f60eb3a4b9f7f17105496a"

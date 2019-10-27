@@ -15,6 +15,7 @@ gunicorn = "*"
 flask-ext = "*"
 flask-script = "*"
 psycopg2 = "*"
+sqlalchemy-citext = "*"
 
 [requires]
 python_version = "3.7"
