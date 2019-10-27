@@ -60,7 +60,7 @@ class ProposalResponse(db.Model):
 
 
 class EventEvents(db.Model):
-    __tablename__ = "events"
+    __tablename__ = "event_events"
 
     id = db.Column(db.Integer, primary_key=True, index=True)
     # when update was created
@@ -73,7 +73,7 @@ class EventEvents(db.Model):
     # event details
     # TODO add nullable = False
     event_id = db.Column(db.Integer, nullable=True)
-    # event_id = db.Column(db.Integer, db.ForeignKey('event_ids.id'), index=True)
+    # event_id = db.Column(db.Integer, db.ForeignKey('events.id'), index=True)
     name = db.Column(db.String(64), nullable=False)
     start_at = db.Column(db.DateTime, nullable=False)
     end_at = db.Column(db.DateTime, nullable=False)
@@ -100,22 +100,20 @@ class EventEvents(db.Model):
     # points per attendee
     points_pp = db.Column(db.Float)
 
-    # TODO add event
-    # event = db.relationship('Event', back_populates='updates')
+    event = db.relationship('Event', back_populates='updates')
 
 
 class Event(db.Model):
-    __tablename__ = "event_ids"
+    __tablename__ = "events"
     id = db.Column(db.Integer, primary_key=True, index=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now())
     organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False,
                              index=True)
-    # TODO add updates
-    # updates = db.relationship('EventEvents', back_populates='event', lazy='dynamic')
+    updates = db.relationship('EventEvents', back_populates='event', lazy='dynamic')
     organiser = db.relationship('User', back_populates='events_organised')
-    # attendees = db.relationship('Attendance', back_populates='event', lazy='dynamic')
-    # responses = db.relationship('ProposalResponse', back_populates='event',
-    #                             lazy='dynamic')
+    attendees = db.relationship('Attendance', back_populates='event', lazy='dynamic')
+    responses = db.relationship('ProposalResponse', back_populates='event',
+                                lazy='dynamic')
 
 
 class Attendance(db.Model):
