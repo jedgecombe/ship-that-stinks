@@ -50,11 +50,13 @@ class ProposalResponse(db.Model):
     created_at = db.Column(db.DateTime,  nullable=False,  default=datetime.now())
     description = db.Column(db.String(32), nullable=False, default="Accept")
     is_active = db.Column(db.Boolean, nullable=False, default=True)
-    event_id = db.Column(db.Integer, db.ForeignKey('event_ids.id'), index=True)
+    # TODO re-add
+    event_id = db.Column(db.Integer, nullable=True)
+    # event_id = db.Column(db.Integer, db.ForeignKey('event_ids.id'), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
 
     user = db.relationship('User', back_populates='responses')
-    event = db.relationship('Event', back_populates='responses')
+    # event = db.relationship('Event', back_populates='responses')
 
 
 class EventEvents(db.Model):
@@ -127,4 +129,4 @@ class Attendance(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
 
     user = db.relationship('User', back_populates='attendances')
-    event = db.relationship('Event', back_populates='attendees')
+    # event = db.relationship('Event', back_populates='attendees')
