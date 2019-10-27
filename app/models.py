@@ -113,9 +113,9 @@ class Event(db.Model):
     # TODO add updates
     # updates = db.relationship('EventEvents', back_populates='event', lazy='dynamic')
     organiser = db.relationship('User', back_populates='events_organised')
-    attendees = db.relationship('Attendance', back_populates='event', lazy='dynamic')
-    responses = db.relationship('ProposalResponse', back_populates='event',
-                                lazy='dynamic')
+    # attendees = db.relationship('Attendance', back_populates='event', lazy='dynamic')
+    # responses = db.relationship('ProposalResponse', back_populates='event',
+    #                             lazy='dynamic')
 
 
 class Attendance(db.Model):
