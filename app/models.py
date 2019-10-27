@@ -110,7 +110,7 @@ class Event(db.Model):
     organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False,
                              index=True)
     # updates = db.relationship('EventEvents', back_populates='event', lazy='dynamic')
-    organiser = db.relationship('User', back_populates='events_organised')
+    # organiser = db.relationship('User', back_populates='events_organised')
     # attendees = db.relationship('Attendance', back_populates='event', lazy='dynamic')
     # responses = db.relationship('ProposalResponse', back_populates='event',
     #                             lazy='dynamic')
