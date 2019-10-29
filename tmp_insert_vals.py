@@ -8,37 +8,37 @@ USERS = [
     {
         "first_name": "James",
         "surname": "Edgecombe",
-        "nickname": "Jal",
+        "username": "Jal",
         "email": "j.m.edgecombe@gmail.com"
     },
     {
         "first_name": "James",
         "surname": "Marvin",
-        "nickname": "Marv",
+        "username": "Marv",
         "email": "j_marvin@mail.com"
     },
     {
         "first_name": "Dylan",
         "surname": "Drake",
-        "nickname": "Dyl",
+        "username": "Dyl",
         "email": "dylandrake@me.com"
     },
     {
         "first_name": "Sam",
         "surname": "Hollinsworth",
-        "nickname": "Holli",
+        "username": "Holli",
         "email": "sam@gmail.com"
     },
     {
         "first_name": "Dave",
         "surname": "Foster",
-        "nickname": "Dave",
+        "username": "Dave",
         "email": "dave@gmail.com"
     },
     {
         "first_name": "Will",
         "surname": "Dyer",
-        "nickname": "Will Dyer",
+        "username": "Will Dyer",
         "email": "will@gmail.com"
     },
 ]
@@ -143,7 +143,7 @@ RESPONSES = [
 
 for user in USERS:
     u = User(first_name=user["first_name"], surname=user["surname"],
-             nickname=user["nickname"], email=user["email"])
+             username=user["username"], email=user["email"])
     u.set_password("password")
     db.session.add(u)
     db.session.commit()

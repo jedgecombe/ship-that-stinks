@@ -23,18 +23,17 @@ To setup tables remotely:
 To setup tables locally: 
 1. DROP DATABASE shipthatstinks;
 2. CREATE DATABASE shipthatstinks;
-3. python
-2. from app import db
-3. db.create_all()
+3. flask db init
+4. flask db migrate
+5. flask db upgrade
 
-To migrate database
-1. MAYBE NECESSARY - delete .py file inside `migrations/versions`
-2. flask db init
-3. generate changes - flask db migrate
-4. apply changes - flask db upgrade
 
 Retry release:
 heroku releases:retry --app shipthatstinks-api-heroku
+
+Get local copy of remote database:
+1. delete 
+`heroku pg:pull DATABASE_URL ship-that-stinks-copy --app shipthatstinks-api-heroku`
 
 
 ## Running Postgres Locally

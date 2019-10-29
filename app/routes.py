@@ -22,7 +22,7 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(nickname=form.username.data).first()
+        user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
@@ -41,7 +41,7 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(first_name=form.first_name.data, surname=form.surname.data,
-                    nickname=form.username.data, email=form.email.data)
+                    username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
@@ -109,17 +109,17 @@ def index():
 def points():
     # TODO fix to show 0 plunder for someone with no events - need to LEFT JOIN but also subquery to avoid filter forcing inner
     query = db.session.query(
-        User.nickname,
+        User.username,
         func.coalesce(func.count(Attendance.id), 0).label('attendance_cnt'),
         func.coalesce(func.sum(EventEvents.points_pp), 0).label('points_sum')
     ).join(Attendance, User.id == Attendance.user_id).join(
         EventEvents, Attendance.event_id == EventEvents.id
     ).filter(Attendance.is_active).group_by(User.id).order_by(
-        desc('points_sum'), desc('attendance_cnt'), "nickname")
+        desc('points_sum'), desc('attendance_cnt'), "username")
     logger.debug(f"points query: {query}")
     results = query.all()
     logger.debug(f"points results: {results}")
-    UserGrp = namedtuple("UserGrp", ["nickname", "attendance_cnt", "points_sum"])
+    UserGrp = namedtuple("UserGrp", ["username", "attendance_cnt", "points_sum"])
     html_input = []
     for nn, ac, ps in results:
         html_input.append(UserGrp(nn, ac, ps))

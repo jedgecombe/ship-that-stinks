@@ -18,14 +18,14 @@
           <h4>Attendees</h4>
             <ul>
           {% for attendee in event.attendees.filter_by(is_active=True)  %}
-                <li> {{ attendee.user.nickname }}</li>
+                <li> {{ attendee.user.username }}</li>
           {% endfor %}
             </ul>
         {% endif %}
         {% if event.organised_by == current_user.id %}
         <a href="{{ url_for('register_attendance', event_id=event.id) }}">Register attendance</a>
         {% else %}
-        <i>Proposed by {{ event.organiser.nickname }}</i>
+        <i>Proposed by {{ event.organiser.username }}</i>
         {% endif %}
     </div>
     {% endfor %}

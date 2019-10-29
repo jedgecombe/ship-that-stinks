@@ -45,7 +45,7 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Register')
 
     def validate_username(self, username):
-        user = User.query.filter_by(nickname=username.data).first()
+        user = User.query.filter_by(username=username.data).first()
         if user is not None:
             raise ValidationError('Please use a different username.')
 
@@ -67,8 +67,8 @@ class AccountForm(FlaskForm):
 
 class RegisterAttendanceForm(FlaskForm):
     users = User.query.all()
-    nicknames = [(user.id, user.nickname) for user in users]
-    user_ids = MultiCheckboxField('Label', choices=nicknames)
+    user_details = [(user.id, user.username) for user in users]
+    user_ids = MultiCheckboxField('Label', choices=user_details)
 
     submit = SubmitField('Register attendance')
 
