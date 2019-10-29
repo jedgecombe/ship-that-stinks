@@ -82,6 +82,7 @@ class EventEvents(db.Model):
     # TODO delete organised_by
     organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
 
+    # TODO move the following to events
     # number of attendees recorded - NULL, until attendance is recorded
     attendee_cnt = db.Column(db.Integer)
     # multiplier user for the attendee score component
@@ -94,7 +95,7 @@ class EventEvents(db.Model):
 
 class Event(db.Model):
     __tablename__ = "events"
-    id = db.Column(db.Integer, primary_key=True, index=True)
+    id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now())
     organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False,
                              index=True)

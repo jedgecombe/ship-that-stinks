@@ -113,8 +113,9 @@ def points():
         func.coalesce(func.count(Attendance.id), 0).label('attendance_cnt'),
         func.coalesce(func.sum(EventEvents.points_pp), 0).label('points_sum')
     ).join(Attendance, User.id == Attendance.user_id).join(
-        EventEvents, Attendance.event_id == EventEvents.id
-    ).filter(Attendance.is_active).group_by(User.id).order_by(
+        EventEvents, Attendance.event_id == EventEvents.event_id
+    ).filter(and_(Attendance.is_active, EventEvents.is_active,
+                  EventEvents.is_active_update)).group_by(User.id).order_by(
         desc('points_sum'), desc('attendance_cnt'), "username")
     logger.debug(f"points query: {query}")
     results = query.all()
@@ -172,7 +173,7 @@ def delete_event():
             del event_kwargs[k]
     event_kwargs["is_active"] = False
     event_kwargs["is_active_update"] = True
-    event_kwargs["update_created_at"] = datetime.now()
+    event_kwargs["created_at"] = datetime.now()
     new_event = EventEvents(**event_kwargs)
     logger.debug(f"creating new event with attributes: {event_kwargs}")
     new_event.is_active = False
@@ -202,7 +203,7 @@ def modify_event(form):
                          f"event_id: {original_event_id})")
         event_kwargs["is_active"] = True
         event_kwargs["is_active_update"] = True
-        event_kwargs["update_created_at"] = datetime.now()
+        event_kwargs["created_at"] = datetime.now()
         updated_event = EventEvents(**event_kwargs)
         db.session.add(updated_event)
         original_event.update(dict(is_active_update=False, is_active=False))

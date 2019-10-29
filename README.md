@@ -35,6 +35,9 @@ Get local copy of remote database:
 1. delete 
 `heroku pg:pull DATABASE_URL ship-that-stinks-copy --app shipthatstinks-api-heroku`
 
+Update sequences for autoincrement reset:
+1. see sequences: `SELECT c.relname FROM pg_class c WHERE c.relkind = 'S';`
+2. e.g. to update `SELECT setval('events_id_seq', (SELECT max(id) FROM events));`
 
 ## Running Postgres Locally
 * start postgres server `psql postgres`

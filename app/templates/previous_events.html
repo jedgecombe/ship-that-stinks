@@ -14,18 +14,18 @@
            <li>Plunder per shipmate: {{ event.points_pp }}</li>
           </div>
       </ul>
-        {% if event.attendees.filter_by(is_active=True) %}
+        {% if event.event.attendees.filter_by(is_active=True) %}
           <h4>Attendees</h4>
             <ul>
-          {% for attendee in event.attendees.filter_by(is_active=True)  %}
+          {% for attendee in event.event.attendees.filter_by(is_active=True)  %}
                 <li> {{ attendee.user.username }}</li>
           {% endfor %}
             </ul>
         {% endif %}
-        {% if event.organised_by == current_user.id %}
-        <a href="{{ url_for('register_attendance', event_id=event.id) }}">Register attendance</a>
+        {% if event.event.organised_by == current_user.id %}
+        <a href="{{ url_for('register_attendance', event_id=event.event_id) }}">Register attendance</a>
         {% else %}
-        <i>Proposed by {{ event.organiser.username }}</i>
+        <i>Proposed by {{ event.event.organiser.username }}</i>
         {% endif %}
     </div>
     {% endfor %}
