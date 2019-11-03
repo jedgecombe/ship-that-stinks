@@ -5,27 +5,29 @@
   {% if events %}
     {% for event in events %}
     <div class="event">
-      <h3> {{ event.name }} </h3>
       <ul>
-        <li><b>When: </b> {{ event.start_at.strftime('%a, %b %-d, %Y') }} at {{ event.start_at.strftime('%H:%M') }}</li>
-        <li><b>Where: </b> {{ event.location }} </li>
-        {% if event.organised_by == current_user.id %}
-        <li>Proposed by you - <a href = " {{ url_for('create_event', modify=True, id=event.id) }}">Modify this event</a> - <a href = " {{ url_for('create_event', delete=True, id=event.id) }}">Delete this event</a></li>
-        {% else %}
-        <li>Proposed by {{ event.event.organiser.username }} on {{ event.event.created_at.strftime('%a, %b %-d') }} ({{ event.notice_days }} days notice)</li>
-        {% endif %}
-        {% if event.event.responses.filter_by(is_active=True) %}
+        {% for upd in event.updates %}
+            <h3> {{ upd.name }} </h3>
+            <li><b>When: </b> {{ upd.start_at.strftime('%a, %b %-d, %Y') }} at {{ upd.start_at.strftime('%H:%M') }}</li>
+            <li><b>Where: </b> {{ upd.location }} </li>
+            <li>Proposed by {{ event.organiser.username }} ({{ event.notice_days }} days notice) </li>
+            {% if event.organised_by == current_user.id %}
+                <li><a href = " {{ url_for('create_event', modify=True, id=upd.id) }}">Modify this event</a> - <a href = " {{ url_for('create_event', delete=True, id=upd.id) }}">Delete this event</a></li>
+            {% else %}
+                {% if current_user.responses.filter_by(event_id=event.id, is_active=True).first() %}
+                    <li><a href = " {{ url_for('response', modify=True, response_id=current_user.responses.filter_by(event_id=event.id, is_active=True).first().id, event_id=event.id) }}">Modify your response</a></li>
+                {% else %}
+                    <li><a href = "{{ url_for('response', event_id=event.id) }}">Respond to this proposal</a></li>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        {% if event.responses.filter_by(is_active=True) %}
           <h4>Responses</h4>
-            <ul>
-          {% for responder in event.event.responses.filter_by(is_active=True) %}
-                <li>{{ responder.user.username }} - {{ responder.description }} </li>
+          <ul>
+          {% for responder in event.responses.filter_by(is_active=True) %}
+             <li>{{ responder.user.username }} - {{ responder.description }} </li>
           {% endfor %}
-            </ul>
-        {% endif %}
-        {% if current_user.responses.filter_by(event_id=event.event_id).first() %}
-        <li>{{ current_user.responses.filter_by(event_id=event.event_id, is_active=True).first().response }}  <a href = " {{ url_for('response', modify=True, response_id=current_user.responses.filter_by(event_id=event.event_id, is_active=True).first().id, event_id=event.event_id) }}">Modify your response</a></li>
-        {% else %}
-        <li><a href = "{{ url_for('response', event_id=event.event_id) }}">Respond</a> to this proposal</li>
+          </ul>
         {% endif %}
       </ul>
     </div>

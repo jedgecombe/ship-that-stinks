@@ -24,6 +24,7 @@ To setup tables locally:
 1. DROP DATABASE shipthatstinks;
 2. CREATE DATABASE shipthatstinks;
 3. flask db init
+4. flask db stamp heads  (if target database not up to date)
 4. flask db migrate
 5. flask db upgrade
 
@@ -32,8 +33,8 @@ Retry release:
 heroku releases:retry --app shipthatstinks-api-heroku
 
 Get local copy of remote database:
-1. delete 
-`heroku pg:pull DATABASE_URL ship-that-stinks-copy --app shipthatstinks-api-heroku`
+1. delete database
+`heroku pg:pull DATABASE_URL ship-that-stinks-staging --app shipthatstinks-api-heroku`
 
 Update sequences for autoincrement reset:
 1. see sequences: `SELECT c.relname FROM pg_class c WHERE c.relkind = 'S';`

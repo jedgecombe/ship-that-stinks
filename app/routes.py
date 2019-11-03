@@ -85,23 +85,18 @@ def response():
 @app.route('/index')
 @login_required
 def index():
-    # start_at, location, id, name, organised_by
-    #
-    # query = db.session.query(
-    #     Event.nickname,
-    #     func.coalesce(func.count(Attendance.id), 0).label('attendance_cnt'),
-    #     func.coalesce(func.sum(EventEvents.points_pp), 0).label('points_sum')
-    # ).join(Attendance, User.id == Attendance.user_id).join(
-    #     EventEvents, Attendance.event_id == EventEvents.id
-    # ).filter(Attendance.is_active).group_by(User.id).order_by(
-    #     desc('points_sum'), desc('attendance_cnt'), "nickname")
+    results = Event.query.join(
+        EventEvents, Event.id == EventEvents.event_id
+    ).filter(
+        and_(EventEvents.is_active, EventEvents.is_active_update,
+             EventEvents.start_at > datetime.now())
+    ).order_by(
+        EventEvents.start_at
+    )
 
-    # TODO update to filter on events
-    q = EventEvents.query.filter(and_(EventEvents.start_at > datetime.now(),
-                                           EventEvents.is_active, EventEvents.is_active_update)).order_by(EventEvents.start_at)
-    print(q)
-    events = q.all()
-    return render_template('index.html', title='Home', events=events)
+    logger.debug(results)
+
+    return render_template('index.html', title='Home', events=results)
 
 
 @app.route('/points')
@@ -111,9 +106,11 @@ def points():
     query = db.session.query(
         User.username,
         func.coalesce(func.count(Attendance.id), 0).label('attendance_cnt'),
-        func.coalesce(func.sum(EventEvents.points_pp), 0).label('points_sum')
+        func.coalesce(func.sum(Event.points_pp), 0).label('points_sum')
     ).join(Attendance, User.id == Attendance.user_id).join(
-        EventEvents, Attendance.event_id == EventEvents.event_id
+        Event, Attendance.event_id == Event.id
+    ).join(
+        EventEvents, Event.id == EventEvents.event_id
     ).filter(and_(Attendance.is_active, EventEvents.is_active,
                   EventEvents.is_active_update)).group_by(User.id).order_by(
         desc('points_sum'), desc('attendance_cnt'), "username")
@@ -139,22 +136,23 @@ def previous_events():
 def get_event_params(form) -> dict:
     start_at = dt_from_sql(f"{form.start_date.data} {form.start_time.data}")
     end_at = dt_from_sql(f"{form.end_date.data} {form.end_time.data}")
-    notice_days = (start_at - datetime.now()).days
     return {
         "name": form.name.data,
         "start_at": start_at,
         "end_at": end_at,
-        "notice_days": notice_days,
-        "notice_mult": notice_score(notice_days),
         "location": form.location.data,
         "organised_by": current_user.id
     }
 
 
-def create_new_event_id() -> str:
-    new_event_id = Event(organised_by=current_user.id, created_at=datetime.now())
+def create_new_event_id(start_at) -> str:
+    create_at = datetime.now()
+    notice_days = (start_at - create_at).days
+    new_event_id = Event(organised_by=current_user.id, created_at=create_at,
+                         notice_days=notice_days, notice_mult=notice_score(notice_days))
     db.session.add(new_event_id)
     db.session.commit()
+    # TODO there has to be a neater way
     event_id = db.session.query(Event.id).filter(
         Event.organised_by == current_user.id).order_by(
         desc(Event.created_at), desc(Event.id)).first()
@@ -215,7 +213,7 @@ def modify_event(form):
 def new_event(form):
     if form.validate_on_submit():
         event_kwargs = get_event_params(form)
-        event_kwargs["event_id"] = create_new_event_id()
+        event_kwargs["event_id"] = create_new_event_id(event_kwargs["start_at"])
         event_new = EventEvents(**event_kwargs)
         db.session.add(event_new)
         db.session.commit()
@@ -266,11 +264,13 @@ def update_account():
 @login_required
 def register_attendance():
     event_id = request.args.get('event_id')
-    if event_id and current_user.id == EventEvents.query.get(event_id).organised_by:
+    if event_id and current_user.id == Event.query.get(event_id).organised_by:
         focus_event = EventEvents.query.get(event_id)
+        logger.debug(f"registering attendance for event_id: {event_id}")
         form = RegisterAttendanceForm(obj=focus_event)
         if request.method == "POST":
             selected_users = request.form.getlist("user_ids")
+            logger.debug(f"available attendees: {selected_users}")
             currently_recorded = Attendance.query.filter_by(event_id=event_id)
             currently_recorded.update({"is_active": False})
             db.session.commit()
@@ -282,8 +282,8 @@ def register_attendance():
                 db.session.commit()
             attendance_cnt = len(selected_users)
             attendance_mult = attendance_score(attendance_cnt)
-            notice_mult = EventEvents.query.get(event_id).notice_mult
-            EventEvents.query.filter_by(id=event_id).update(
+            notice_mult = Event.query.get(event_id).notice_mult
+            Event.query.filter_by(id=event_id).update(
                 dict(attendee_cnt=attendance_cnt,
                      attendee_mult=attendance_mult,
                      points_pp=round(attendance_mult * notice_mult, 1),
