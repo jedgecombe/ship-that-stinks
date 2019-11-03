@@ -11,6 +11,13 @@
          <li>Days notice: {{ event.notice_days }}</li>
          <li>Number of shipmates: {{ event.attendee_cnt }}</li>
          <li>Plunder per shipmate: {{ event.points_pp }}</li>
+         {% if event.organised_by == current_user.id %}
+         <li><a href="{{ url_for('register_attendance', event_id=event.id) }}">Register attendance</a></li>
+         <li><a href = " {{ url_for('create_event', delete=True, id=upd.id) }}">Delete this event</a></li>
+         {% else %}
+         <li><i>Proposed by {{ event.organiser.username }}</i></li>
+         {% endif %}
+
       {% endfor %}
         {% if event.attendees.filter_by(is_active=True) %}
           <h4>Attendees</h4>
@@ -20,11 +27,7 @@
           {% endfor %}
             </ul>
         {% endif %}
-        {% if event.organised_by == current_user.id %}
-        <a href="{{ url_for('register_attendance', event_id=event.id) }}">Register attendance</a>
-        {% else %}
-        <i>Proposed by {{ event.organiser.username }}</i>
-        {% endif %}
+
     </div>
     {% endfor %}
   {% else %}

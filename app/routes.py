@@ -145,8 +145,7 @@ def get_event_params(form) -> dict:
         "name": form.name.data,
         "start_at": start_at,
         "end_at": end_at,
-        "location": form.location.data,
-        "organised_by": current_user.id
+        "location": form.location.data
     }
 
 

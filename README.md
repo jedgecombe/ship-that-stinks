@@ -33,7 +33,7 @@ To migrate remote:
 - run db migrate (and maybe stamp heads)
 - run db upgrade
 
-
+TODO NEXT - seems to be messed up with migrations. Delete history and start again.
 Retry release:
 heroku releases:retry --app shipthatstinks-api-heroku
 
