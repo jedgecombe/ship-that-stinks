@@ -70,23 +70,6 @@ class EventEvents(db.Model):
     end_at = db.Column(db.DateTime, nullable=False)
     location = db.Column(db.String(128))
     is_active = db.Column(db.Boolean, nullable=False, default=True)
-    # number of days created in advance of start
-    # TODO delete notice_days
-    notice_days = db.Column(db.Integer, nullable=True)
-    # multiplier used for the notice score component
-    notice_mult = db.Column(db.Float, nullable=True)
-    # TODO delete
-    has_happened = db.Column(db.Boolean, default=False, nullable=False)
-    # TODO delete organised_by
-    organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
-
-    # TODO delete
-    # number of attendees recorded - NULL, until attendance is recorded
-    attendee_cnt = db.Column(db.Integer)
-    # multiplier user for the attendee score component
-    attendee_mult = db.Column(db.Float)
-    # points per attendee
-    points_pp = db.Column(db.Float)
 
     event = db.relationship('Event', back_populates='updates')
 
@@ -98,11 +81,10 @@ class Event(db.Model):
     organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False,
                              index=True)
     has_happened = db.Column(db.Boolean, default=False, nullable=True)
-    # TODO change to nullable = False
     # number of days created in advance of start
-    notice_days = db.Column(db.Integer, nullable=True)
+    notice_days = db.Column(db.Integer, nullable=False)
     # multiplier used for the notice score component
-    notice_mult = db.Column(db.Float, nullable=True)
+    notice_mult = db.Column(db.Float, nullable=False)
     # number of attendees recorded - NULL, until attendance is recorded
     attendee_cnt = db.Column(db.Integer, nullable=True)
     # multiplier user for the attendee score component

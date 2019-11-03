@@ -5,27 +5,25 @@
   {% if events %}
     {% for event in events %}
     <div class="event">
-      <h3> {{ event.name }} </h3>
-      <ul>
-          <div>
-           <li>When: {{ event.start_at.strftime('%a, %b %-d, %Y') }} at {{ event.start_at.strftime('%H:%M') }}</li>
-           <li>Days notice: {{ event.notice_days }}</li>
-           <li>Number of shipmates: {{ event.attendee_cnt }}</li>
-           <li>Plunder per shipmate: {{ event.points_pp }}</li>
-          </div>
-      </ul>
-        {% if event.event.attendees.filter_by(is_active=True) %}
+      {% for upd in event.updates.filter_by(is_active_update=True, is_active=True) %}
+         <h3> {{ upd.name }} </h3>
+         <li>When: </b> {{ upd.start_at.strftime('%a, %b %-d, %Y') }} at {{ upd.start_at.strftime('%H:%M') }}</li>
+         <li>Days notice: {{ event.notice_days }}</li>
+         <li>Number of shipmates: {{ event.attendee_cnt }}</li>
+         <li>Plunder per shipmate: {{ event.points_pp }}</li>
+      {% endfor %}
+        {% if event.attendees.filter_by(is_active=True) %}
           <h4>Attendees</h4>
             <ul>
-          {% for attendee in event.event.attendees.filter_by(is_active=True)  %}
+          {% for attendee in event.attendees.filter_by(is_active=True)  %}
                 <li> {{ attendee.user.username }}</li>
           {% endfor %}
             </ul>
         {% endif %}
-        {% if event.event.organised_by == current_user.id %}
-        <a href="{{ url_for('register_attendance', event_id=event.event_id) }}">Register attendance</a>
+        {% if event.organised_by == current_user.id %}
+        <a href="{{ url_for('register_attendance', event_id=event.id) }}">Register attendance</a>
         {% else %}
-        <i>Proposed by {{ event.event.organiser.username }}</i>
+        <i>Proposed by {{ event.organiser.username }}</i>
         {% endif %}
     </div>
     {% endfor %}

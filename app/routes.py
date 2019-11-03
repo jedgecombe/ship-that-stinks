@@ -85,7 +85,7 @@ def response():
 @app.route('/index')
 @login_required
 def index():
-    results = Event.query.join(
+    query = Event.query.join(
         EventEvents, Event.id == EventEvents.event_id
     ).filter(
         and_(EventEvents.is_active, EventEvents.is_active_update,
@@ -93,10 +93,9 @@ def index():
     ).order_by(
         EventEvents.start_at
     )
+    logger.debug(query)
 
-    logger.debug(results)
-
-    return render_template('index.html', title='Home', events=results)
+    return render_template('index.html', title='Home', events=query)
 
 
 @app.route('/points')
@@ -127,10 +126,16 @@ def points():
 @app.route('/previous_events')
 @login_required
 def previous_events():
-    events = EventEvents.query.filter(
-        and_(EventEvents.start_at <= datetime.now(), EventEvents.is_active)).order_by(
-        EventEvents.start_at.desc()).all()
-    return render_template('previous_events.html', title='Home', events=events)
+    query = Event.query.join(
+        EventEvents, Event.id == EventEvents.event_id
+    ).filter(
+        and_(EventEvents.is_active, EventEvents.is_active_update,
+             EventEvents.start_at <= datetime.now())
+    ).order_by(
+        EventEvents.start_at.desc()
+    )
+    logger.debug(query)
+    return render_template('previous_events.html', title='Home', events=query)
 
 
 def get_event_params(form) -> dict:

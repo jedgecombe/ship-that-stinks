@@ -6,7 +6,7 @@
     {% for event in events %}
     <div class="event">
       <ul>
-        {% for upd in event.updates %}
+        {% for upd in event.updates.filter_by(is_active_update=True, is_active=True) %}
             <h3> {{ upd.name }} </h3>
             <li><b>When: </b> {{ upd.start_at.strftime('%a, %b %-d, %Y') }} at {{ upd.start_at.strftime('%H:%M') }}</li>
             <li><b>Where: </b> {{ upd.location }} </li>

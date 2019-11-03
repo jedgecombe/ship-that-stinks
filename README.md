@@ -28,6 +28,11 @@ To setup tables locally:
 4. flask db migrate
 5. flask db upgrade
 
+To migrate remote:
+- download remote db
+- run db migrate (and maybe stamp heads)
+- run db upgrade
+
 
 Retry release:
 heroku releases:retry --app shipthatstinks-api-heroku
