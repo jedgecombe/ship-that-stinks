@@ -8,9 +8,10 @@
       <ul>
         {% for upd in event.updates.filter_by(is_active_update=True, is_active=True) %}
             <h3> {{ upd.name }} </h3>
-            <li><b>When: </b> {{ upd.start_at.strftime('%a, %b %-d, %Y') }} at {{ upd.start_at.strftime('%H:%M') }}</li>
-            <li><b>Where: </b> {{ upd.location }} </li>
-            <li>Proposed by {{ event.organiser.username }} ({{ event.notice_days }} days notice) </li>
+            <li>{{ upd.start_at.strftime('%a, %b %-d, %Y') }} at {{ upd.start_at.strftime('%H:%M') }} in {{ upd.location }}</li>
+            <li>Proposed by {{ event.organiser.username }} with {{ event.notice_days }} days notice </li>
+            <li>Expected shipmates: {{ event.attendee_cnt }}</li>
+            <li>Expected plunder per person: {{ event.points_pp }}</li>
             {% if event.organised_by == current_user.id %}
                 <li><a href = " {{ url_for('create_event', modify=True, id=upd.id) }}">Modify this event</a> - <a href = " {{ url_for('create_event', delete=True, id=upd.id) }}">Delete this event</a></li>
             {% else %}

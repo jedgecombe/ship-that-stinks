@@ -67,6 +67,7 @@ class EventEvents(db.Model):
                          nullable=False)
     name = db.Column(db.String(64), nullable=False)
     start_at = db.Column(db.DateTime, nullable=False)
+    # TODO change from end_at to duration, from which end_at can be inferred
     end_at = db.Column(db.DateTime, nullable=False)
     location = db.Column(db.String(128))
     is_active = db.Column(db.Boolean, nullable=False, default=True)

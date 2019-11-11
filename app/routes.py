@@ -59,21 +59,42 @@ def logout():
 @app.route('/response', methods=['GET', 'POST'])
 @login_required
 def response():
-    # TODO fix for when it is the creator of the event
-    # TODO NEXT finish here
+    # TODO create a responses table e.g. Accepted, Declined, with primary key
     event_id = request.args['event_id']
     logger.debug(f'Responding to event id {event_id}')
-    focus_event = Event.query.get(event_id)
+    focus_event = Event.query.filter_by(id=event_id)
+    notice_mult = focus_event.first().notice_mult
 
     form = ResponseForm()
     if form.validate_on_submit():
         if request.args.get('modify'):
-            ProposalResponse.query.filter_by(id=request.args.get('response_id')).update(
+            existing_response = ProposalResponse.query.filter_by(
+                id=request.args.get('response_id'))
+            existing_response.update(
                 dict(is_active=False))
-        new_response = ProposalResponse(description=form.response.data, is_active=True,
+
+        response_descr = form.response.data
+        new_response = ProposalResponse(description=response_descr, is_active=True,
                                         event_id=event_id,
                                         user_id=current_user.id)
         db.session.add(new_response)
+
+        query = db.session.query(
+            func.coalesce(func.count(ProposalResponse.id) + 1, 1).label(
+                'expected_attendance')
+        ).join(
+            Event, ProposalResponse.event_id == Event.id
+        ).filter(and_(Event.id == event_id, ProposalResponse.is_active,
+                      ProposalResponse.description == 'Accepted')
+                 )
+
+        logger.debug(f"expected attendees query: {query}")
+        expected_attendance = query.first().expected_attendance
+        attendance_mult = attendance_score(expected_attendance)
+        focus_event.update(
+            dict(attendee_cnt=expected_attendance,
+                 attendee_mult=attendance_mult,
+                 points_pp=round(attendance_mult * notice_mult, 1)))
         db.session.commit()
         flash(f"You've responded to the event")
         return redirect(url_for('index'))
@@ -101,25 +122,57 @@ def index():
 @app.route('/points')
 @login_required
 def points():
-    # TODO fix to show 0 plunder for someone with no events - need to LEFT JOIN but also subquery to avoid filter forcing inner
-    query = db.session.query(
+    query_sched = db.session.query(
         User.username,
-        func.coalesce(func.count(Attendance.id), 0).label('attendance_cnt'),
-        func.coalesce(func.sum(Event.points_pp), 0).label('points_sum')
-    ).join(Attendance, User.id == Attendance.user_id).join(
+        func.coalesce(func.sum(Event.points_pp), 0).label('expected_points')
+    ).join(
+        ProposalResponse, Event.id == ProposalResponse.event_id
+    ).join(
+        EventEvents, Event.id == EventEvents.event_id
+    ).join(
+        User, User.id == ProposalResponse.user_id
+    ).filter(
+        and_(Event.has_happened == False, ProposalResponse.is_active,
+             ProposalResponse.description == 'Accepted',
+             EventEvents.is_active, EventEvents.is_active_update,
+             EventEvents.start_at < '2020-01-01')
+    ).group_by(User.username).subquery("sched")
+
+    query_taken = db.session.query(
+        User.username,
+        func.count(Attendance.id).label('attendance_cnt'),
+        func.sum(Event.points_pp).label('points_sum')
+    ).join(
+        Attendance, User.id == Attendance.user_id
+    ).join(
         Event, Attendance.event_id == Event.id
     ).join(
         EventEvents, Event.id == EventEvents.event_id
     ).filter(and_(Attendance.is_active, EventEvents.is_active,
-                  EventEvents.is_active_update)).group_by(User.id).order_by(
-        desc('points_sum'), desc('attendance_cnt'), "username")
-    logger.debug(f"points query: {query}")
+                  EventEvents.is_active_update)).group_by(User.username).subquery('taken')
+
+    query = db.session.query(
+        User.username,
+        func.coalesce(query_taken.c.attendance_cnt, 0).label('attendance_cnt'),
+        func.coalesce(query_taken.c.points_sum, 0).label('points_sum'),
+        func.coalesce(query_sched.c.expected_points, 0).label('expected_points_sum'),
+    ).outerjoin(
+        query_taken, query_taken.c.username == User.username
+    ).outerjoin(
+        query_sched, query_sched.c.username == User.username
+    ).order_by(
+        desc('points_sum'), desc('expected_points_sum'),
+        desc('attendance_cnt'), "username")
+
     results = query.all()
+    logger.debug(f"points query: {query}")
     logger.debug(f"points results: {results}")
-    UserGrp = namedtuple("UserGrp", ["username", "attendance_cnt", "points_sum"])
+    UserGrp = namedtuple("UserGrp", ["username", "attendance_cnt", "points_sum",
+                                     "expected_points_sum"])
     html_input = []
-    for nn, ac, ps in results:
-        html_input.append(UserGrp(nn, ac, ps))
+    for nn, ac, ps, ep in results:
+        html_input.append(UserGrp(nn, ac, ps, ep))
+
     return render_template('points.html', title='Points', users=html_input)
 
 
@@ -153,7 +206,8 @@ def create_new_event_id(start_at) -> str:
     create_at = datetime.now()
     notice_days = (start_at - create_at).days
     new_event_id = Event(organised_by=current_user.id, created_at=create_at,
-                         notice_days=notice_days, notice_mult=notice_score(notice_days))
+                         notice_days=notice_days, notice_mult=notice_score(notice_days),
+                         attendee_cnt=1, attendee_mult=attendance_score(1))
     db.session.add(new_event_id)
     db.session.commit()
     # TODO there has to be a neater way
@@ -200,7 +254,7 @@ def modify_event(form):
             event_kwargs["event_id"] = original_event_id
             logger.debug(f"modifying existing event: {original_event_id}")
         else:
-            event_kwargs["event_id"] = create_new_event_id()
+            event_kwargs["event_id"] = create_new_event_id(event_kwargs["start_at"])
             logger.debug(f"creating new event id: {event_kwargs['event_id']} (from "
                          f"event_id: {original_event_id})")
         event_kwargs["is_active"] = True

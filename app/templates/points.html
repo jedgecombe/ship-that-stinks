@@ -7,7 +7,9 @@
       <h3> {{ user.username }} </h3>
       <ul>
           <div>
-           <li>Plunder taken: {{ user.points_sum }}</li>
+           <li>Docked {{ user.attendance_cnt }} times</li>
+           <li>Plunder enjoyed: {{ user.points_sum }}</li>
+           <li>Plunder planned to be pillaged: {{ user.expected_points_sum}}</li>
           </div>
       </ul>
     </div>
