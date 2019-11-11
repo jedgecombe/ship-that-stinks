@@ -138,6 +138,19 @@ def points():
              EventEvents.start_at < '2020-01-01')
     ).group_by(User.username).subquery("sched")
 
+    query_org = db.session.query(
+        User.username,
+        func.coalesce(func.sum(Event.points_pp), 0).label('organiser_points')
+    ).join(
+        EventEvents, Event.id == EventEvents.event_id
+    ).join(
+        User, User.id == Event.organised_by
+    ).filter(
+        and_(Event.has_happened == False,
+             EventEvents.is_active, EventEvents.is_active_update,
+             EventEvents.start_at < '2020-01-01')
+    ).group_by(User.username).subquery("org")
+
     query_taken = db.session.query(
         User.username,
         func.count(Attendance.id).label('attendance_cnt'),
@@ -155,11 +168,14 @@ def points():
         User.username,
         func.coalesce(query_taken.c.attendance_cnt, 0).label('attendance_cnt'),
         func.coalesce(query_taken.c.points_sum, 0).label('points_sum'),
-        func.coalesce(query_sched.c.expected_points, 0).label('expected_points_sum'),
+        (func.coalesce(query_sched.c.expected_points, 0
+                       )+func.coalesce(query_org.c.organiser_points, 0)).label('expected_points_sum'),
     ).outerjoin(
         query_taken, query_taken.c.username == User.username
     ).outerjoin(
         query_sched, query_sched.c.username == User.username
+    ).outerjoin(
+        query_org, query_org.c.username == User.username
     ).order_by(
         desc('points_sum'), desc('expected_points_sum'),
         desc('attendance_cnt'), "username")
