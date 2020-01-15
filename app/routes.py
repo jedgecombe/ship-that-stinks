@@ -1,5 +1,5 @@
 from collections import namedtuple
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 
 from flask import flash, redirect, render_template, request, url_for
@@ -10,8 +10,8 @@ from werkzeug.urls import url_parse
 from app import app, db
 from app.forms import AccountForm, EventForm, LoginForm, ResponseForm, \
     RegistrationForm, RegisterAttendanceForm
-from app.models import Attendance, EventEvents, Event, ProposalResponse, User
-from app.points import attendance_score, notice_score
+from app.models import Attendance, Cycle, EventEvents, Event, ProposalResponse, User
+from app.points import calculate_points, attendance_score, notice_score
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,8 @@ def response():
     event_id = request.args['event_id']
     logger.debug(f'Responding to event id {event_id}')
     focus_event = Event.query.filter_by(id=event_id)
-    notice_mult = focus_event.first().notice_mult
+    cycle_id = focus_event.first().cycle_id
+    notice = focus_event.first().notice_days
 
     form = ResponseForm()
     if form.validate_on_submit():
@@ -90,11 +91,11 @@ def response():
 
         logger.debug(f"expected attendees query: {query}")
         expected_attendance = query.first().expected_attendance
-        attendance_mult = attendance_score(expected_attendance)
+        attendance_mult = attendance_score(cycle_id, expected_attendance)
         focus_event.update(
             dict(attendee_cnt=expected_attendance,
                  attendee_mult=attendance_mult,
-                 points_pp=round(attendance_mult * notice_mult, 1)))
+                 points_pp=calculate_points(cycle_id, notice, expected_attendance)))
         db.session.commit()
         flash(f"You've responded to the event")
         return redirect(url_for('index'))
@@ -126,6 +127,8 @@ def points():
         User.username,
         func.coalesce(func.sum(Event.points_pp), 0).label('expected_points')
     ).join(
+        Cycle, Cycle.id == Event.cycle_id
+    ).join(
         ProposalResponse, Event.id == ProposalResponse.event_id
     ).join(
         EventEvents, Event.id == EventEvents.event_id
@@ -135,12 +138,16 @@ def points():
         and_(Event.has_happened == False, ProposalResponse.is_active,
              ProposalResponse.description == 'Accepted',
              EventEvents.is_active, EventEvents.is_active_update,
-             EventEvents.start_at < '2020-01-01')
+             EventEvents.start_at < '2020-01-01',
+             Cycle.start_at <= datetime.now(),
+             Cycle.end_at > datetime.now())
     ).group_by(User.username).subquery("sched")
 
     query_org = db.session.query(
         User.username,
         func.coalesce(func.sum(Event.points_pp), 0).label('organiser_points')
+    ).join(
+        Cycle, Cycle.id == Event.cycle_id
     ).join(
         EventEvents, Event.id == EventEvents.event_id
     ).join(
@@ -148,7 +155,9 @@ def points():
     ).filter(
         and_(Event.has_happened == False,
              EventEvents.is_active, EventEvents.is_active_update,
-             EventEvents.start_at < '2020-01-01')
+             EventEvents.start_at < '2020-01-01',
+             Cycle.start_at <= datetime.now(),
+             Cycle.end_at > datetime.now())
     ).group_by(User.username).subquery("org")
 
     query_taken = db.session.query(
@@ -160,9 +169,13 @@ def points():
     ).join(
         Event, Attendance.event_id == Event.id
     ).join(
+        Cycle, Cycle.id == Event.cycle_id
+    ).join(
         EventEvents, Event.id == EventEvents.event_id
     ).filter(and_(Attendance.is_active, EventEvents.is_active,
-                  EventEvents.is_active_update)).group_by(User.username).subquery('taken')
+                  EventEvents.is_active_update,
+             Cycle.start_at <= datetime.now(),
+             Cycle.end_at > datetime.now())).group_by(User.username).subquery('taken')
 
     query = db.session.query(
         User.username,
@@ -219,11 +232,18 @@ def get_event_params(form) -> dict:
 
 
 def create_new_event_id(start_at) -> str:
+    cycle_id = Cycle.query.filter(
+        and_(
+        start_at >= Cycle.start_at,
+        start_at < Cycle.end_at)).first().id
     create_at = datetime.now()
     notice_days = (start_at - create_at).days
     new_event_id = Event(organised_by=current_user.id, created_at=create_at,
-                         notice_days=notice_days, notice_mult=notice_score(notice_days),
-                         attendee_cnt=1, attendee_mult=attendance_score(1))
+                         notice_days=notice_days,
+                         notice_mult=notice_score(cycle_id, notice_days),
+                         attendee_cnt=1,
+                         attendee_mult=attendance_score(cycle_id, 1),
+                         cycle_id=cycle_id)
     db.session.add(new_event_id)
     db.session.commit()
     # TODO there has to be a neater way
@@ -356,11 +376,14 @@ def register_attendance():
                 db.session.commit()
             attendance_cnt = len(selected_users)
             attendance_mult = attendance_score(attendance_cnt)
-            notice_mult = Event.query.get(event_id).notice_mult
             Event.query.filter_by(id=event_id).update(
                 dict(attendee_cnt=attendance_cnt,
                      attendee_mult=attendance_mult,
-                     points_pp=round(attendance_mult * notice_mult, 1),
+                     points_pp=calculate_points(
+                         focus_event.cycle_id,
+                         focus_event.notice_days,
+                         attendance_cnt
+                     ),
                      has_happened=True))
             db.session.commit()
             return redirect(url_for('previous_events'))

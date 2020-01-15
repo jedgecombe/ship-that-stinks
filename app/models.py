@@ -81,6 +81,9 @@ class Event(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now())
     organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False,
                              index=True)
+    # TODO change to nullable=False
+    cycle_id = db.Column(db.Integer, db.ForeignKey('cycles.id'),
+                             index=True)
     has_happened = db.Column(db.Boolean, default=False, nullable=True)
     # number of days created in advance of start
     notice_days = db.Column(db.Integer, nullable=False)
@@ -101,6 +104,7 @@ class Event(db.Model):
     attendees = db.relationship('Attendance', back_populates='event', lazy='dynamic')
     responses = db.relationship('ProposalResponse', back_populates='event',
                                 lazy='dynamic')
+    cycle = db.relationship('Cycle', back_populates='events')
 
 
 class Attendance(db.Model):
@@ -114,3 +118,13 @@ class Attendance(db.Model):
 
     user = db.relationship('User', back_populates='attendances')
     event = db.relationship('Event', back_populates='attendees')
+
+
+class Cycle(db.Model):
+    __tablename__ = "cycles"
+
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    start_at = db.Column(db.Date, nullable=False)
+    end_at = db.Column(db.Date, nullable=False)
+
+    events = db.relationship('Event', back_populates='cycle', lazy='dynamic')

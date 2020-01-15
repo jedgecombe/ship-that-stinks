@@ -20,7 +20,7 @@ class EventForm(FlaskForm):
     start_date = DateField('Event date', validators=[DataRequired(), DateRange(
         min=datetime.datetime.today().date())])
     start_time = TimeField('Event time', validators=[DataRequired()])
-    end_date = DateField('EventEvents end date', validators=[DataRequired(), DateRange(
+    end_date = DateField('Event end date', validators=[DataRequired(), DateRange(
         min=datetime.datetime.today().date())])
     end_time = TimeField('Event end time', validators=[DataRequired()])
     location = StringField('Event location', validators=[DataRequired()])

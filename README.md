@@ -39,7 +39,7 @@ heroku releases:retry --app shipthatstinks-api-heroku
 
 Get local copy of remote database:
 1. delete database
-`heroku pg:pull DATABASE_URL ship-that-stinks-staging --app shipthatstinks-api-heroku`
+2. `heroku pg:pull DATABASE_URL ship-that-stinks-staging --app shipthatstinks-api-heroku`
 
 Update sequences for autoincrement reset:
 1. see sequences: `SELECT c.relname FROM pg_class c WHERE c.relkind = 'S';`
