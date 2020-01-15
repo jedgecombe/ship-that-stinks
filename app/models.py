@@ -81,9 +81,8 @@ class Event(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now())
     organised_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False,
                              index=True)
-    # TODO change to nullable=False
-    cycle_id = db.Column(db.Integer, db.ForeignKey('cycles.id'),
-                             index=True)
+    cycle_id = db.Column(db.Integer, db.ForeignKey('cycles.id'), index=True,
+                         nullable=False)
     has_happened = db.Column(db.Boolean, default=False, nullable=True)
     # number of days created in advance of start
     notice_days = db.Column(db.Integer, nullable=False)

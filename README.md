@@ -38,8 +38,12 @@ Retry release:
 heroku releases:retry --app shipthatstinks-api-heroku
 
 Get local copy of remote database:
-1. delete database
+1. `DROP DATABASE "ship-that-stinks-staging";`
 2. `heroku pg:pull DATABASE_URL ship-that-stinks-staging --app shipthatstinks-api-heroku`
+THEN run migrations (delete migrations/ and table alembic_version if necessary)
+i.e. flask db init / flask db migrate / flask db upgrade
+THEN push to remote
+`heroku run flask db upgrade -a shipthatstinks-api-heroku`
 
 Update sequences for autoincrement reset:
 1. see sequences: `SELECT c.relname FROM pg_class c WHERE c.relkind = 'S';`

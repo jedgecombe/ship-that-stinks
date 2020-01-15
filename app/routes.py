@@ -138,7 +138,6 @@ def points():
         and_(Event.has_happened == False, ProposalResponse.is_active,
              ProposalResponse.description == 'Accepted',
              EventEvents.is_active, EventEvents.is_active_update,
-             EventEvents.start_at < '2020-01-01',
              Cycle.start_at <= datetime.now(),
              Cycle.end_at > datetime.now())
     ).group_by(User.username).subquery("sched")
@@ -155,7 +154,6 @@ def points():
     ).filter(
         and_(Event.has_happened == False,
              EventEvents.is_active, EventEvents.is_active_update,
-             EventEvents.start_at < '2020-01-01',
              Cycle.start_at <= datetime.now(),
              Cycle.end_at > datetime.now())
     ).group_by(User.username).subquery("org")
@@ -289,10 +287,12 @@ def modify_event(form):
         if max_start_diff <= MAX_HOURS_DIFF:
             event_kwargs["event_id"] = original_event_id
             logger.debug(f"modifying existing event: {original_event_id}")
+            new_event = False
         else:
             event_kwargs["event_id"] = create_new_event_id(event_kwargs["start_at"])
             logger.debug(f"creating new event id: {event_kwargs['event_id']} (from "
                          f"event_id: {original_event_id})")
+            new_event = True
         event_kwargs["is_active"] = True
         event_kwargs["is_active_update"] = True
         event_kwargs["created_at"] = datetime.now()
@@ -300,7 +300,11 @@ def modify_event(form):
         db.session.add(updated_event)
         original_event.update(dict(is_active_update=False, is_active=False))
         db.session.commit()
-        flash(f"EventEvents proposal for '{form.name.data}' sent")
+        if new_event:
+            flash(f"Timing too different from prior event. New event created: '{form.name.data}'")
+        else:
+            flash(f"Modification for '{form.name.data}' completed. Notice period "
+                  f"maintained")
         return redirect(url_for("index"))
 
 
@@ -311,7 +315,7 @@ def new_event(form):
         event_new = EventEvents(**event_kwargs)
         db.session.add(event_new)
         db.session.commit()
-        flash(f"EventEvents proposal for '{form.name.data}' sent")
+        flash(f"Event created: '{form.name.data}'")
         return redirect(url_for("index"))
 
 
