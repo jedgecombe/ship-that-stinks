@@ -63,8 +63,31 @@ def response():
     event_id = request.args['event_id']
     logger.debug(f'Responding to event id {event_id}')
     focus_event = Event.query.filter_by(id=event_id)
-    cycle_id = focus_event.first().cycle_id
-    notice = focus_event.first().notice_days
+
+    event_query = db.session.query(
+        Event.id,
+        EventEvents.name,
+        Event.cycle_id,
+        Event.notice_days,
+        EventEvents.start_at,
+        EventEvents.end_at
+    ).join(
+        EventEvents, Event.id == EventEvents.event_id
+    ).filter(
+        and_(EventEvents.is_active_update,
+             Event.id == event_id)
+    )
+
+    focus_event_data = event_query.first()
+
+    event_name = focus_event_data.name
+    cycle_id = focus_event_data.cycle_id
+    notice = focus_event_data.notice_days
+    start_at = focus_event_data.start_at
+    end_at = focus_event_data.end_at
+    days = (end_at - start_at).days
+
+    print('!!!!!!', days)
 
     form = ResponseForm()
     if form.validate_on_submit():
@@ -95,9 +118,9 @@ def response():
         focus_event.update(
             dict(attendee_cnt=expected_attendance,
                  attendee_mult=attendance_mult,
-                 points_pp=calculate_points(cycle_id, notice, expected_attendance)))
+                 points_pp=calculate_points(cycle_id, notice, expected_attendance, days)))
         db.session.commit()
-        flash(f"You've responded to the event")
+        flash(f"You've responded to the {event_name}")
         return redirect(url_for('index'))
     return render_template('response.html', title='Respond to an event proposal',
                            event=focus_event, form=form)
@@ -107,6 +130,9 @@ def response():
 @app.route('/index')
 @login_required
 def index():
+    query = db.session.query(
+        Event.id
+    )
     query = Event.query.join(
         EventEvents, Event.id == EventEvents.event_id
     ).filter(
@@ -361,9 +387,30 @@ def update_account():
 @app.route('/register_attendance', methods=['GET', 'POST'])
 @login_required
 def register_attendance():
+
     event_id = request.args.get('event_id')
-    if event_id and current_user.id == Event.query.get(event_id).organised_by:
-        focus_event = EventEvents.query.get(event_id)
+    focus_event = Event.query.get(event_id)
+    event_query = db.session.query(
+        Event.id,
+        EventEvents.name,
+        Event.cycle_id,
+        Event.notice_days,
+        EventEvents.start_at,
+        EventEvents.end_at
+    ).join(
+        EventEvents, Event.id == EventEvents.event_id
+    ).filter(
+        and_(EventEvents.is_active_update,
+             Event.id == event_id)
+    )
+
+    focus_event_data = event_query.first()
+    start_at = focus_event_data.start_at
+    end_at = focus_event_data.end_at
+    cycle_id = focus_event_data.cycle_id
+    days = (end_at - start_at).days
+    notice_days = focus_event_data.notice_days
+    if event_id and current_user.id == focus_event.organised_by:
         logger.debug(f"registering attendance for event_id: {event_id}")
         form = RegisterAttendanceForm(obj=focus_event)
         if request.method == "POST":
@@ -379,14 +426,15 @@ def register_attendance():
                 db.session.add(attendance)
                 db.session.commit()
             attendance_cnt = len(selected_users)
-            attendance_mult = attendance_score(attendance_cnt)
+            attendance_mult = attendance_score(cycle_id, attendance_cnt)
             Event.query.filter_by(id=event_id).update(
                 dict(attendee_cnt=attendance_cnt,
                      attendee_mult=attendance_mult,
                      points_pp=calculate_points(
-                         focus_event.cycle_id,
-                         focus_event.notice_days,
-                         attendance_cnt
+                         cycle_id,
+                         notice_days,
+                         attendance_cnt,
+                         days
                      ),
                      has_happened=True))
             db.session.commit()

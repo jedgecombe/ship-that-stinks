@@ -9,6 +9,7 @@
         {% for upd in event.updates.filter_by(is_active_update=True, is_active=True) %}
             <h3> {{ upd.name }} </h3>
             <li>{{ upd.start_at.strftime('%a, %b %-d, %Y') }} at {{ upd.start_at.strftime('%H:%M') }} in {{ upd.location }}</li>
+            <li>Duration: {{ (upd.end_at - upd.start_at).days }} days {{ (upd.end_at - upd.start_at).seconds // 3600 }} hours</li>
             <li>Proposed by {{ event.organiser.username }} with {{ event.notice_days }} days notice </li>
             <li>Expected shipmates: {{ event.attendee_cnt }}</li>
             <li>Expected plunder per person: {{ event.points_pp }}</li>
