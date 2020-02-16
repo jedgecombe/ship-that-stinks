@@ -1,5 +1,5 @@
 from collections import namedtuple
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 
 from flask import flash, redirect, render_template, request, url_for

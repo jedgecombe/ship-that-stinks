@@ -27,18 +27,28 @@ def notice_score(cycle: int, notice: int) -> float:
     return min([math.log(notice + 2, 93.5), 1])
 
 
-def calculate_points(cycle: int, notice: int, attendance: int, days: int = 0) -> float:
+def calculate_points(cycle: int, notice: int, attendance: int, days: float = 0) -> float:
     score = notice_score(cycle, notice) * attendance_score(cycle, attendance)
     if cycle == 1:
         score = round(score, 1)
     else:
         score = round(score, 0)
-    return math.floor(days + 1) * score
+    day_adj = multi_day_adj(days, fract=0.69)
+    return day_adj * score
+
+
+def multi_day_adj(days: float, fract: float) -> float:
+    days = math.ceil(days)
+    return sum([fract ** d for d in range(days)])
 
 
 if __name__ == '__main__':
     att = 3
     noti = 0
-    days = 0.1
-    print(f"attendance: {attendance_score(2, att)}, notice: {notice_score(2, noti)}, score: {calculate_points(2, noti, att, days)}")
+    days = 2.1
+    print(f"attendance: "
+          f"{attendance_score(2, att)}, "
+          f"notice: {notice_score(2, noti)}, "
+          f"day adj: {multi_day_adj(days, 0.69)} "
+          f"total score: {calculate_points(2, noti, att, days)}")
 
