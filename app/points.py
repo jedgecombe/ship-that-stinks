@@ -29,12 +29,13 @@ def notice_score(cycle: int, notice: int) -> float:
 
 def calculate_points(cycle: int, notice: int, attendance: int, days: float = 0) -> float:
     score = notice_score(cycle, notice) * attendance_score(cycle, attendance)
+    day_adj = multi_day_adj(days, fract=0.69)
+    score = score * day_adj
     if cycle == 1:
         score = round(score, 1)
     else:
         score = round(score, 0)
-    day_adj = multi_day_adj(days, fract=0.69)
-    return day_adj * score
+    return score
 
 
 def multi_day_adj(days: float, fract: float) -> float:
