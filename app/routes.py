@@ -85,9 +85,7 @@ def response():
     notice = focus_event_data.notice_days
     start_at = focus_event_data.start_at
     end_at = focus_event_data.end_at
-    days = (end_at - start_at).days
-
-    print('!!!!!!', days)
+    days = (end_at - start_at).total_seconds()/60/60/24
 
     form = ResponseForm()
     if form.validate_on_submit():
@@ -130,9 +128,6 @@ def response():
 @app.route('/index')
 @login_required
 def index():
-    query = db.session.query(
-        Event.id
-    )
     query = Event.query.join(
         EventEvents, Event.id == EventEvents.event_id
     ).filter(
@@ -408,7 +403,7 @@ def register_attendance():
     start_at = focus_event_data.start_at
     end_at = focus_event_data.end_at
     cycle_id = focus_event_data.cycle_id
-    days = (end_at - start_at).days
+    days = (end_at - start_at).total_seconds()/60/60/24
     notice_days = focus_event_data.notice_days
     if event_id and current_user.id == focus_event.organised_by:
         logger.debug(f"registering attendance for event_id: {event_id}")

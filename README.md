@@ -58,3 +58,12 @@ Show tables `\dt`
 
 
 Daily backups set with: heroku `pg:backups:schedule --at '04:00 Europe/London' --app shipthatstinks-api-heroku`
+
+To reset password
+1. `heroku run python -a shipthatstinks-api-heroku`
+from app import db
+from app.models import User
+user = User.query.filter_by(id=5).first()
+user.set_password(form.password.data)
+db.session.add(user)
+db.session.commit()

@@ -31,6 +31,7 @@ def calculate_points(cycle: int, notice: int, attendance: int, days: float = 0) 
     score = notice_score(cycle, notice) * attendance_score(cycle, attendance)
     day_adj = multi_day_adj(days, fract=0.69)
     score = score * day_adj
+
     if cycle == 1:
         score = round(score, 1)
     else:
@@ -45,8 +46,8 @@ def multi_day_adj(days: float, fract: float) -> float:
 
 if __name__ == '__main__':
     att = 3
-    noti = 0
-    days = 2.1
+    noti = 4
+    days = 0.0
     print(f"attendance: "
           f"{attendance_score(2, att)}, "
           f"notice: {notice_score(2, noti)}, "
